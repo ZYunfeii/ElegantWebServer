@@ -12,7 +12,7 @@ Cookie *m_cookie = Cookie::get_instance();        // 获取Cookie单例
 const unordered_set<string> HttpRequest::DEFAULT_HTML{
             "/index", "/register", "/login",
              "/welcome", "/video", "/picture",
-             "/blogindex" };
+             "/blogindex", "/fileupload", "/filedownload"};
 
 const unordered_map<string, int> HttpRequest::DEFAULT_HTML_TAG {
             {"/register.html", 0}, {"/login.html", 1},  };
@@ -40,7 +40,10 @@ bool HttpRequest::parse(Buffer& buff) {
         return false;
     }
     while(buff.ReadableBytes() && state_ != FINISH) { // 主状态机最终state = FINISH 退出循环
-        const char* lineEnd = search(buff.Peek(), buff.BeginWriteConst(), CRLF, CRLF + 2); // 在buff中找到\r\n序列中\r的头指针 
+        const char* lineEnd = search(buff.Peek(), buff.BeginWriteConst(), CRLF, CRLF + 2); // 在buff中找到\r\n序列中\r的头指针
+        if(state_ == BODY && header_["Content-Type"].find("multipart/form-data") != std::string::npos) { 
+            lineEnd = buff.BeginWriteConst(); // 如果下一个状态是读消息体且为POST上传文件，则lineEnd直接取结尾
+        } 
         std::string line(buff.Peek(), lineEnd);
         switch(state_) // 状态机
         {
@@ -63,8 +66,16 @@ bool HttpRequest::parse(Buffer& buff) {
             break;
         }
         if(lineEnd == buff.BeginWrite()) { break; }
-        buff.RetrieveUntil(lineEnd + 2);
+        buff.RetrieveUntil(lineEnd + 2); // 这里对buff已读部分进行跳过
     }
+    // debug
+    for(auto it = header_.begin(); it != header_.end(); ++it) {
+        std::cout << it->first << ":" << it->second << std::endl;
+    } 
+    std::cout<< "method:" << method_ << " path:" << path_ << " version:" << version_ <<std::endl;
+    std::cout << std::endl;
+    
+
     LOG_DEBUG("[%s], [%s], [%s]", method_.c_str(), path_.c_str(), version_.c_str());
     return true;
 }
@@ -72,8 +83,7 @@ bool HttpRequest::parse(Buffer& buff) {
 void HttpRequest::ParsePath_() {
     if(path_ == "/") {
         path_ = "/index.html"; 
-    }
-    else {
+    }else {
         for(auto &item: DEFAULT_HTML) { // html中href可能没加.html，因此在这加上
             if(item == path_) {
                 path_ += ".html";
@@ -81,6 +91,7 @@ void HttpRequest::ParsePath_() {
             }
         }
     }
+
 }
 
 bool HttpRequest::ParseRequestLine_(const string& line) {
@@ -106,10 +117,6 @@ void HttpRequest::ParseHeader_(const string& line) {
     else { // 不满足正则说明读到头和数据部分中间的空行 则下一行为数据
         state_ = BODY;
     }
-    // debug
-    if (header_.find("Cookie") != header_.end()) {
-        std::cout << header_["Cookie"] << std::endl;
-    }
 }
 
 void HttpRequest::ParseBody_(const string& line) {
@@ -126,6 +133,10 @@ int HttpRequest::ConverHex(char ch) {
 }
 
 void HttpRequest::ParsePost_() { // 只有POST有数据部分(BODY)
+    // debug
+    std::cout << header_["Content-Type"] << std::endl;
+    
+
     if(method_ == "POST" && header_["Content-Type"] == "application/x-www-form-urlencoded") {
         ParseFromUrlencoded_(); // 获取POST键值对
         if(DEFAULT_HTML_TAG.count(path_)) {
@@ -141,9 +152,45 @@ void HttpRequest::ParsePost_() { // 只有POST有数据部分(BODY)
                 }
             }
         }
-    }else if(method_ == "POST") { // todo
-
+    }else if(method_ == "POST" && header_["Content-Type"].find("multipart/form-data") != std::string::npos) { // todo
+        // debug
+        // std::cout << body_ << std::endl;
+        ParseFileUpLoadBody_();
     }   
+}
+
+/*
+multipart/form-data; boundary=----WebKitFormBoundaryxOLnWy9YBRuoNy4d
+------WebKitFormBoundaryxOLnWy9YBRuoNy4d
+Content-Disposition: form-data; name="filename"; filename="test.txt"
+Content-Type: text/plain
+
+hello world
+------WebKitFormBoundaryxOLnWy9YBRuoNy4d--
+*/
+void HttpRequest::ParseFileUpLoadBody_() {
+    std::string find_str = "boundary=";
+    std::size_t idx = header_["Content-Type"].find(find_str);
+    if (idx == std::string::npos) return; // 没找到boundary信息 报文有误
+    else {
+        std::string boundary(header_["Content-Type"].begin() + idx + find_str.size(), header_["Content-Type"].end());
+        int boundary_len = boundary.size();
+        find_str = "Content-Type:";
+        idx = body_.find(find_str);
+        while (!(body_[idx] == '\r' && body_[idx + 1] == '\n')) ++idx;
+        idx += 4; // 两对\r\n
+        std::string file_data(body_.begin() + idx, body_.end() - boundary_len - 6); // 结尾 \r\n + “--” + 开头"--"
+        // debug
+        std::cout << file_data.data() << std::endl;
+        std::cout << file_data.size() << std::endl;
+
+        const char *file_begin_write = file_data.data();
+        FILE *file;
+        file = fopen("./user-msgs/fileupload", "w");
+        fwrite(file_begin_write, file_data.size(), 1, file);
+        fflush(file);
+        fclose(file);
+    }
 }
 
 void HttpRequest::ParseFromUrlencoded_() {

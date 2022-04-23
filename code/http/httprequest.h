@@ -13,6 +13,8 @@
 #include <errno.h>     
 #include <mysql/mysql.h>  //mysql
 
+#include <fstream>
+
 #include "../buffer/buffer.h"
 #include "../log/log.h"
 #include "../pool/sqlconnpool.h"
@@ -73,6 +75,7 @@ private:
     void ParsePath_();
     void ParsePost_();
     void ParseFromUrlencoded_();
+    void ParseFileUpLoadBody_();
 
     bool UserVerify(const std::string& name, const std::string& pwd, bool isLogin);
 
@@ -86,7 +89,6 @@ private:
     static int ConverHex(char ch);
 
     std::shared_ptr<cookie> m_cookie_;
-    
 };
 
 

@@ -120,7 +120,7 @@ void HttpResponse::AddHeader_(Buffer& buff) {
     }
     buff.Append("Content-type: " + GetFileType_() + "\r\n"); 
     if(mCookie_->isCookie_) {
-        buff.Append("Set-Cookie:" + (mCookie_->sendCookieStr_) + ";HttpOnly; Path=/" + "\r\n");
+        buff.Append("Set-Cookie:sessionid=" + (mCookie_->sendCookieStr_) + ";HttpOnly; Path=/" + "\r\n");
     }
 }
 
