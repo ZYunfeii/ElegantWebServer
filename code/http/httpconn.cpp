@@ -96,6 +96,9 @@ ssize_t HttpConn::write(int* saveErrno) {
 
 // 核心处理函数 读和写在这作为接口
 bool HttpConn::process() {
+    ssize_t length = readBuff_.FindContentLength();
+    if(length != -1 && readBuff_.ReadableBytes() < length) return false;  // 解决大文件上传bug post传输大数据量时会分段发送 没接收完别处理
+
     request_.Init();
     if(readBuff_.ReadableBytes() <= 0) {
         return false;

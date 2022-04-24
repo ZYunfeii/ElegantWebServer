@@ -68,8 +68,8 @@ void Buffer::Append(const void* data, size_t len) {
 void Buffer::Append(const char* str, size_t len) {
     assert(str);
     EnsureWriteable(len); // 扩张内存 保证读全
-    std::copy(str, str + len, BeginWrite()); // 将str内容写到buffer
-    HasWritten(len);
+    std::copy(str, str + len, BeginWrite()); // 将str内容追加写到buffer
+    HasWritten(len); // 更新wirtepos
 }
 
 void Buffer::Append(const Buffer& buff) {
@@ -102,7 +102,7 @@ ssize_t Buffer::ReadFd(int fd, int* saveErrno) {
     }
     else {
         writePos_ = buffer_.size();
-        Append(buff, len - writable); // 如果读到的总长度大雨可写长度，则有len - writable字节读到了buff中，内部会再将buff内容读入扩容后的buffer_
+        Append(buff, len - writable); // 如果读到的总长度大于可写长度，则有len - writable字节读到了buff中，内部会再将buff内容读入扩容后的buffer_
     }
     return len;
 }
@@ -138,3 +138,18 @@ void Buffer::MakeSpace_(size_t len) {
         assert(readable == ReadableBytes());
     }
 }
+
+ssize_t Buffer::FindContentLength() {
+    std::string str(BeginPtr_(), BeginPtr_() + writePos_);
+    std::string find_str = "Content-Length:";
+    int idx = str.find("Content-Length:");
+    if (idx == std::string::npos) return -1;
+    else {
+        idx += find_str.size();
+    }
+    int end = idx;
+    while(!(str[end] == '\r' && str[end + 1] == '\n')) end++;
+    std::string length(BeginPtr_() + idx, BeginPtr_() + end);
+    return atoi(length.c_str());
+}
+

@@ -67,14 +67,7 @@ bool HttpRequest::parse(Buffer& buff) {
         }
         if(lineEnd == buff.BeginWrite()) { break; }
         buff.RetrieveUntil(lineEnd + 2); // 这里对buff已读部分进行跳过
-    }
-    // debug
-    for(auto it = header_.begin(); it != header_.end(); ++it) {
-        std::cout << it->first << ":" << it->second << std::endl;
-    } 
-    std::cout<< "method:" << method_ << " path:" << path_ << " version:" << version_ <<std::endl;
-    std::cout << std::endl;
-    
+    }   
 
     LOG_DEBUG("[%s], [%s], [%s]", method_.c_str(), path_.c_str(), version_.c_str());
     return true;
@@ -180,9 +173,6 @@ void HttpRequest::ParseFileUpLoadBody_() {
         while (!(body_[idx] == '\r' && body_[idx + 1] == '\n')) ++idx;
         idx += 4; // 两对\r\n
         std::string file_data(body_.begin() + idx, body_.end() - boundary_len - 6); // 结尾 \r\n + “--” + 开头"--"
-        // debug
-        std::cout << file_data.data() << std::endl;
-        std::cout << file_data.size() << std::endl;
 
         const char *file_begin_write = file_data.data();
         FILE *file;
