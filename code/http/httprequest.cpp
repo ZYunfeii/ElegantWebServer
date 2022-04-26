@@ -126,10 +126,7 @@ int HttpRequest::ConverHex(char ch) {
 }
 
 void HttpRequest::ParsePost_() { // 只有POST有数据部分(BODY)
-    // debug
-    std::cout << header_["Content-Type"] << std::endl;
-    
-
+    LOG_DEBUG("ParaPost");
     if(method_ == "POST" && header_["Content-Type"] == "application/x-www-form-urlencoded") {
         ParseFromUrlencoded_(); // 获取POST键值对
         if(DEFAULT_HTML_TAG.count(path_)) {
@@ -146,8 +143,6 @@ void HttpRequest::ParsePost_() { // 只有POST有数据部分(BODY)
             }
         }
     }else if(method_ == "POST" && header_["Content-Type"].find("multipart/form-data") != std::string::npos) { // todo
-        // debug
-        // std::cout << body_ << std::endl;
         ParseFileUpLoadBody_();
     }   
 }
@@ -173,10 +168,22 @@ void HttpRequest::ParseFileUpLoadBody_() {
         while (!(body_[idx] == '\r' && body_[idx + 1] == '\n')) ++idx;
         idx += 4; // 两对\r\n
         std::string file_data(body_.begin() + idx, body_.end() - boundary_len - 6); // 结尾 \r\n + “--” + 开头"--"
-
+        std::string file_name = "./user-msgs/default";
+        if (header_.find("Cookie") != header_.end()) { // 存在cookie
+            std::string cke = header_["Cookie"];
+            std::string sessionid = "";
+            size_t idx = cke.find("=");
+            if(idx != std::string::npos) {
+                sessionid = cke.substr(idx + 1, cke.size() - idx - 1);
+            }
+            std::string user_find = m_cookie->find_user_from_md5(sessionid);
+            if (!sessionid.empty() && user_find != "No user find") {
+                file_name = "./user-msgs/" + user_find;
+            }
+        }
         const char *file_begin_write = file_data.data();
         FILE *file;
-        file = fopen("./user-msgs/fileupload", "w");
+        file = fopen(file_name.c_str(), "w");
         fwrite(file_begin_write, file_data.size(), 1, file);
         fflush(file);
         fclose(file);

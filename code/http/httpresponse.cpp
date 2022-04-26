@@ -6,6 +6,7 @@
 #include "httpresponse.h"
 
 using namespace std;
+extern size_t visits;
 
 const unordered_map<string, string> HttpResponse::SUFFIX_TYPE = {
     { ".html",  "text/html" },
@@ -42,6 +43,10 @@ const unordered_map<int, string> HttpResponse::CODE_PATH = {
     { 404, "/404.html" },
 };
 
+const unordered_set<string> HttpResponse::STRING_GET = {
+    "/get-num-visits"
+};
+
 HttpResponse::HttpResponse() {
     code_ = -1;
     path_ = srcDir_ = "";
@@ -61,22 +66,27 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
     isKeepAlive_ = isKeepAlive;
     path_ = path;
     srcDir_ = srcDir;
+    strTrans_ = "";
     mmFile_ = nullptr; 
     mmFileStat_ = { 0 };
     mCookie_ = cke;
+    if (STRING_GET.find(path_) != STRING_GET.end()) ifTransNotFile_ = true; // 非文件请求
+    else ifTransNotFile_ = false;
 }
 
 void HttpResponse::MakeResponse(Buffer& buff) {
     /* 判断请求的资源文件 */
-    if(stat((srcDir_ + path_).data(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) { // stat通过文件名filename获取文件信息，并保存在mmFileStat_中(其中有size等信息)
-        code_ = 404;
-    }
-    else if(!(mmFileStat_.st_mode & S_IROTH)) {
-        code_ = 403;
-    }
-    else if(code_ == -1) { 
-        code_ = 200; 
-    }
+    if (!ifTransNotFile_){
+        if(stat((srcDir_ + path_).data(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) { // stat通过文件名filename获取文件信息，并保存在mmFileStat_中(其中有size等信息)
+            code_ = 404;
+        }
+        else if(!(mmFileStat_.st_mode & S_IROTH)) {
+            code_ = 403;
+        }
+        else if(code_ == -1) { 
+            code_ = 200; 
+        }
+    } 
     ErrorHtml_();
     AddStateLine_(buff);
     AddHeader_(buff);
@@ -125,23 +135,28 @@ void HttpResponse::AddHeader_(Buffer& buff) {
 }
 
 void HttpResponse::AddContent_(Buffer& buff) {
-    int srcFd = open((srcDir_ + path_).data(), O_RDONLY);
-    if(srcFd < 0) { 
-        ErrorContent(buff, "File NotFound!");
-        return; 
-    }
+    if (!ifTransNotFile_) {
+        int srcFd = open((srcDir_ + path_).data(), O_RDONLY);
+        if(srcFd < 0) { 
+            ErrorContent(buff, "File NotFound!");
+            return; 
+        }
 
-    /* 将文件映射到内存提高文件的访问速度 
-        MAP_PRIVATE 建立一个写入时拷贝的私有映射*/
-    LOG_DEBUG("file path %s", (srcDir_ + path_).data());
-    int* mmRet = (int*)mmap(0, mmFileStat_.st_size, PROT_READ, MAP_PRIVATE, srcFd, 0);
-    if(*mmRet == -1) {
-        ErrorContent(buff, "File NotFound!");
-        return; 
+        /* 将文件映射到内存提高文件的访问速度 
+            MAP_PRIVATE 建立一个写入时拷贝的私有映射*/
+        LOG_DEBUG("file path %s", (srcDir_ + path_).data());
+        int* mmRet = (int*)mmap(0, mmFileStat_.st_size, PROT_READ, MAP_PRIVATE, srcFd, 0);
+        if(*mmRet == -1) {
+            ErrorContent(buff, "File NotFound!");
+            return; 
+        }
+        mmFile_ = (char*)mmRet;
+        close(srcFd);
+        buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
+    } else { // 传输的非文件，仅仅是字符串
+        strTrans_ = to_string(visits / 6);
+        buff.Append("Content-length: " + to_string(strTrans_.size()) + "\r\n\r\n");
     }
-    mmFile_ = (char*)mmRet;
-    close(srcFd);
-    buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
 }
 
 void HttpResponse::UnmapFile() {
@@ -181,4 +196,16 @@ void HttpResponse::ErrorContent(Buffer& buff, string message)
 
     buff.Append("Content-length: " + to_string(body.size()) + "\r\n\r\n");
     buff.Append(body);
+}
+
+bool HttpResponse::ifTransNotFile() {
+    return ifTransNotFile_;
+}
+
+char*  HttpResponse::GetTransStrToCharPtr() {
+    return const_cast<char*>(strTrans_.c_str());
+}
+
+size_t HttpResponse::StrLen() const {
+    return strTrans_.size();
 }

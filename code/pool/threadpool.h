@@ -28,15 +28,15 @@ public:
                             locker.lock();
                         } 
                         else if(pool->isClosed) break;
-                        else pool->cond.wait(locker);
+                        else pool->cond.wait(locker); // 解锁互斥量并陷入休眠以等待通知被唤醒,被唤醒后加锁以保护共享数据
                     }
                 }).detach();
             }
     }
 
-    ThreadPool() = default;
+    ThreadPool() = default; // 构造默认
 
-    ThreadPool(ThreadPool&&) = default;
+    ThreadPool(ThreadPool&&) = default; // 移动构造默认
     
     ~ThreadPool() {
         if(static_cast<bool>(pool_)) {
@@ -54,7 +54,7 @@ public:
             std::lock_guard<std::mutex> locker(pool_->mtx);
             pool_->tasks.emplace(std::forward<F>(task));
         }
-        pool_->cond.notify_one();
+        pool_->cond.notify_one(); // 生产者 唤醒一个线程处理
     }
 
 private:

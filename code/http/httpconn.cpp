@@ -9,6 +9,7 @@ using namespace std;
 const char* HttpConn::srcDir; // 全局的，在webserver.cpp中定义
 std::atomic<int> HttpConn::userCount;
 bool HttpConn::isET;
+size_t visits = 0; // 访问量
 
 HttpConn::HttpConn() { 
     fd_ = -1;
@@ -23,6 +24,7 @@ HttpConn::~HttpConn() {
 void HttpConn::init(int fd, const sockaddr_in& addr) {
     assert(fd > 0);
     userCount++;
+    visits++;     
     addr_ = addr;
     fd_ = fd;
     writeBuff_.RetrieveAll(); // 清空
@@ -96,7 +98,7 @@ ssize_t HttpConn::write(int* saveErrno) {
 
 // 核心处理函数 读和写在这作为接口
 bool HttpConn::process() {
-    ssize_t length = readBuff_.FindContentLength();
+    size_t length = readBuff_.FindContentLength();
     if(length != -1 && readBuff_.ReadableBytes() < length) return false;  // 解决大文件上传bug post传输大数据量时会分段发送 没接收完别处理
 
     request_.Init();
@@ -117,9 +119,15 @@ bool HttpConn::process() {
     iovCnt_ = 1;
     // 头和文件是在两块不连续的内存上的，使用分散写
     /* 文件 */
-    if(response_.FileLen() > 0  && response_.File()) {
-        iov_[1].iov_base = response_.File();
-        iov_[1].iov_len = response_.FileLen();
+    if (!response_.ifTransNotFile()){
+        if(response_.FileLen() > 0  && response_.File()) {
+            iov_[1].iov_base = response_.File();
+            iov_[1].iov_len = response_.FileLen();
+            iovCnt_ = 2;
+        }
+    } else { // 字符串传输 用于ajax
+        iov_[1].iov_base = response_.GetTransStrToCharPtr();
+        iov_[1].iov_len = response_.StrLen();
         iovCnt_ = 2;
     }
     LOG_DEBUG("filesize:%d, %d  to %d", response_.FileLen() , iovCnt_, ToWriteBytes());

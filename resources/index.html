@@ -43,7 +43,7 @@
                          <span class="icon icon-bar"></span>
                     </button>
                     <!-- lOGO TEXT HERE -->
-                    <a href="/blogindex" class="navbar-brand">Xuan</a>
+                    <a href="/blogindex" class="navbar-brand" id="name">Xuan</a>
                </div>
                <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav navbar-right">
@@ -83,6 +83,24 @@
      <script src="js/magnific-popup-options.js"></script>
      <script src="js/wow.min.js"></script>
      <script src="js/custom.js"></script>
+
+<script>
+     const results = document.getElementById('name');
+     window.onload = function(){
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', '/get-num-visits');
+          xhr.send();
+          xhr.onreadystatechange = function() {
+               if (xhr.readyState === 4) {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                         console.log(xhr.response);
+                         results.innerHTML = '访问量:' + xhr.response;
+                    }
+               }
+          }
+     }
+</script>
+
 </body>
 
 </html>

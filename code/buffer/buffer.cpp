@@ -139,7 +139,7 @@ void Buffer::MakeSpace_(size_t len) {
     }
 }
 
-ssize_t Buffer::FindContentLength() {
+size_t Buffer::FindContentLength() {
     std::string str(BeginPtr_(), BeginPtr_() + writePos_);
     std::string find_str = "Content-Length:";
     int idx = str.find("Content-Length:");

@@ -40,7 +40,7 @@ public:
     void Append(const void* data, size_t len);
     void Append(const Buffer& buff);
     
-    ssize_t FindContentLength();
+    size_t FindContentLength();
 
 
     ssize_t ReadFd(int fd, int* Errno);

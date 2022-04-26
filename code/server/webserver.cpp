@@ -8,6 +8,9 @@
 
 using namespace std;
 
+/*
+timeoutMS：每一个新加入的client都有timeoutMS ms expires（生存期）
+*/
 WebServer::WebServer(
             int port, int trigMode, int timeoutMS, bool OptLinger,
             int sqlPort, const char* sqlUser, const  char* sqlPwd,
@@ -81,7 +84,7 @@ void WebServer::Start() {
         if(timeoutMS_ > 0) {
             timeMS = timer_->GetNextTick();
         }
-        int eventCnt = epoller_->Wait(timeMS);
+        int eventCnt = epoller_->Wait(timeMS); // 返回到来的事件数量
         for(int i = 0; i < eventCnt; i++) {
             /* 处理事件 */
             int fd = epoller_->GetEventFd(i);

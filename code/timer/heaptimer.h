@@ -23,7 +23,7 @@ typedef Clock::time_point TimeStamp;
 
 struct TimerNode {
     int id;
-    TimeStamp expires;
+    TimeStamp expires; // 生存期
     TimeoutCallBack cb;
     bool operator<(const TimerNode& t) {
         return expires < t.expires;

@@ -18,7 +18,7 @@ public:
         if(user_cookies_map_.find(md5) != user_cookies_map_.end())
             return user_cookies_map_.at(md5); // if not find md5, it will raise an error because of using ".at"
         else
-            return "No user find"; // 正常情况不会进这 除非有人改浏览器cookie伪装访问服务器
+            return "No user find"; 
     }
     void init_instance_from_vec(const std::vector<std::string> &user_str_vec){
         for(auto &user_str : user_str_vec){
