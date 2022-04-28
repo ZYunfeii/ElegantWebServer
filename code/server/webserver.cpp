@@ -7,6 +7,8 @@
 #include "webserver.h"
 
 using namespace std;
+static int pipefd[2];
+
 
 /*
 timeoutMS：每一个新加入的client都有timeoutMS ms expires（生存期）
@@ -103,7 +105,11 @@ void WebServer::Start() {
             else if(events & EPOLLOUT) {
                 assert(users_.count(fd) > 0);
                 DealWrite_(&users_[fd]);
-            } else {
+            }
+            else if((fd == pipefd[0]) && (events & EPOLLIN)) {
+                
+            }
+            else {
                 LOG_ERROR("Unexpected event");
             }
         }
@@ -162,6 +168,21 @@ void WebServer::DealWrite_(HttpConn* client) {
     assert(client);
     ExtentTime_(client);
     threadpool_->AddTask(std::bind(&WebServer::OnWrite_, this, client));
+}
+
+void WebServer::DealSignal_() {
+    int sig;
+    char signals[1024];
+    int ret = recv(pipefd[0], signals, sizeof(signals), 0);
+    if (ret == -1) return;
+    else if(ret == 0) return;
+    else {
+        for(int i = 0; i < ret; ++i) {
+            switch(signals[i]) {
+                case SIGTERM: isClose_ = true;
+            }
+        }
+    }
 }
 
 void WebServer::ExtentTime_(HttpConn* client) {
@@ -273,12 +294,35 @@ bool WebServer::InitSocket_() {
     }
     SetFdNonblock(listenFd_);
     LOG_INFO("Server port:%d", port_);
+
+    ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
+    assert(ret != -1);
+    SetFdNonblock(pipefd[1]);
+    ret = epoller_->AddFd(pipefd[0],  EPOLLET | EPOLLIN);
+    AddSig(SIGTERM);
+
     return true;
 }
 
 int WebServer::SetFdNonblock(int fd) {
     assert(fd > 0);
     return fcntl(fd, F_SETFL, fcntl(fd, F_GETFD, 0) | O_NONBLOCK);
+}
+
+void WebServer::AddSig(int sig) {
+    struct sigaction sa;
+    memset(&sa, '\0', sizeof(sa));
+    sa.sa_handler = SigHandler;
+    sa.sa_flags |= SA_RESTART;
+    sigfillset(&sa.sa_mask);
+    assert(sigaction(sig, &sa, NULL) != -1); 
+}
+
+void WebServer::SigHandler(int sig) {
+    int save_errno = errno;
+    int msg = sig;
+    send(pipefd[1], (char*)(&msg), 1, 0); // 将信号写入管道，以通知主循环
+    errno = save_errno;
 }
 
 

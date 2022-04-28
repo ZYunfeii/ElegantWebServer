@@ -83,7 +83,7 @@ void BlockDeque<T>::Close() {
 
 template<class T>
 void BlockDeque<T>::flush() {
-    condConsumer_.notify_one();
+    condConsumer_.notify_one(); 
 };
 
 template<class T>
@@ -117,13 +117,13 @@ size_t BlockDeque<T>::capacity() {
 }
 
 template<class T>
-void BlockDeque<T>::push_back(const T &item) {
+void BlockDeque<T>::push_back(const T &item) { // 生产者
     std::unique_lock<std::mutex> locker(mtx_);
     while(deq_.size() >= capacity_) {
-        condProducer_.wait(locker);
+        condProducer_.wait(locker); // 如果阻塞队列满 则想要push的线程都会在这等待
     }
     deq_.push_back(item);
-    condConsumer_.notify_one();
+    condConsumer_.notify_one(); // 通知一个等待pop的消费者线程
 }
 
 template<class T>
@@ -149,17 +149,17 @@ bool BlockDeque<T>::full(){
 }
 
 template<class T>
-bool BlockDeque<T>::pop(T &item) {
+bool BlockDeque<T>::pop(T &item) {   // 消费者
     std::unique_lock<std::mutex> locker(mtx_);
     while(deq_.empty()){
-        condConsumer_.wait(locker);
+        condConsumer_.wait(locker); // 如果空 则所有pop的线程在这里等待
         if(isClose_){
             return false;
         }
     }
     item = deq_.front();
     deq_.pop_front();
-    condProducer_.notify_one();
+    condProducer_.notify_one(); // 唤醒一个等待push的线程
     return true;
 }
 

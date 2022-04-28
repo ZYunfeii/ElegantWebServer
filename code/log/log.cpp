@@ -140,7 +140,7 @@ void Log::write(int level, const char *format, ...) {
         buff_.Append("\n\0", 2);
 
         if(isAsync_ && deque_ && !deque_->full()) {
-            deque_->push_back(buff_.RetrieveAllToStr());
+            deque_->push_back(buff_.RetrieveAllToStr()); // 生产者生产
         } else {
             fputs(buff_.Peek(), fp_);
         }

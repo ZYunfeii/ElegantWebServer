@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 #include "epoller.h"
 #include "../log/log.h"
@@ -42,6 +43,7 @@ private:
     void DealListen_();
     void DealWrite_(HttpConn* client);
     void DealRead_(HttpConn* client);
+    void DealSignal_();
 
     void SendError_(int fd, const char*info);
     void ExtentTime_(HttpConn* client);
@@ -52,8 +54,10 @@ private:
     void OnProcess(HttpConn* client);
 
     static const int MAX_FD = 65536;
-
     static int SetFdNonblock(int fd);
+
+    static void AddSig(int sig);
+    static void SigHandler(int sig);
 
     int port_;
     bool openLinger_;
