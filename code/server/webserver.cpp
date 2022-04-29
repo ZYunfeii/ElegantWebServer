@@ -93,6 +93,8 @@ void WebServer::Start() {
             uint32_t events = epoller_->GetEvents(i);
             if(fd == listenFd_) {
                 DealListen_();
+            }else if((fd == pipefd[0]) && (events & EPOLLIN)) {
+                DealSignal_();
             }
             else if(events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
                 assert(users_.count(fd) > 0);
@@ -105,9 +107,6 @@ void WebServer::Start() {
             else if(events & EPOLLOUT) {
                 assert(users_.count(fd) > 0);
                 DealWrite_(&users_[fd]);
-            }
-            else if((fd == pipefd[0]) && (events & EPOLLIN)) {
-                
             }
             else {
                 LOG_ERROR("Unexpected event");
@@ -179,7 +178,10 @@ void WebServer::DealSignal_() {
     else {
         for(int i = 0; i < ret; ++i) {
             switch(signals[i]) {
-                case SIGTERM: isClose_ = true;
+                case SIGTERM: {
+                    isClose_ = true;
+                    LOG_DEBUG("Receive signal: SIGTERM!");
+                }
             }
         }
     }
