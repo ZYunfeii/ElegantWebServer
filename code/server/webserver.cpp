@@ -180,7 +180,21 @@ void WebServer::DealSignal_() {
             switch(signals[i]) {
                 case SIGTERM: {
                     isClose_ = true;
-                    LOG_DEBUG("Receive signal: SIGTERM!");
+                    LOG_INFO("Receive signal: SIGTERM!");
+                    break;
+                }
+                case SIGHUP: {
+                    LOG_INFO("Receive signal: SIGHUP!");
+                    continue;
+                }
+                case SIGINT: {
+                    isClose_ = true;
+                    LOG_INFO("Receive signal: SIGINT!");
+                    break;
+                }
+                case SIGPIPE: {
+                    LOG_INFO("Receive signal: SIGPIPE!");
+                    continue;
                 }
             }
         }
@@ -302,6 +316,9 @@ bool WebServer::InitSocket_() {
     SetFdNonblock(pipefd[1]);
     ret = epoller_->AddFd(pipefd[0],  EPOLLET | EPOLLIN);
     AddSig(SIGTERM);
+    AddSig(SIGHUP);
+    AddSig(SIGINT);
+    AddSig(SIGPIPE);
 
     return true;
 }
