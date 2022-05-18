@@ -170,7 +170,6 @@ void WebServer::DealWrite_(HttpConn* client) {
 }
 
 void WebServer::DealSignal_() {
-    int sig;
     char signals[1024];
     int ret = recv(pipefd[0], signals, sizeof(signals), 0);
     if (ret == -1) return;
@@ -185,7 +184,7 @@ void WebServer::DealSignal_() {
                 }
                 case SIGHUP: {
                     LOG_INFO("Receive signal: SIGHUP!");
-                    continue;
+                    continue; // 守护进程运行
                 }
                 case SIGINT: {
                     isClose_ = true;
