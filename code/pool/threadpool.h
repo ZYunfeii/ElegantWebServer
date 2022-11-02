@@ -12,6 +12,7 @@
 #include <queue>
 #include <thread>
 #include <functional>
+#include <assert.h>
 class ThreadPool {
 public:
     explicit ThreadPool(size_t threadCount = 8): pool_(std::make_shared<Pool>()) {

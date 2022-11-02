@@ -47,23 +47,23 @@ bool HttpRequest::parse(Buffer& buff) {
         std::string line(buff.Peek(), lineEnd);
         switch(state_) // 状态机
         {
-        case REQUEST_LINE:
-            if(!ParseRequestLine_(line)) { 
-                return false;
-            }
-            ParsePath_();
-            break;    
-        case HEADERS:
-            ParseHeader_(line);
-            if(buff.ReadableBytes() <= 2) { // 剩下\r\n没有数据部分就直接FINISH
-                state_ = FINISH;
-            }
-            break;
-        case BODY:
-            ParseBody_(line);
-            break;
-        default:
-            break;
+            case REQUEST_LINE:
+                if(!ParseRequestLine_(line)) { 
+                    return false;
+                }
+                ParsePath_();
+                break;    
+            case HEADERS:
+                ParseHeader_(line);
+                if(buff.ReadableBytes() <= 2) { // 剩下\r\n没有数据部分就直接FINISH
+                    state_ = FINISH;
+                }
+                break;
+            case BODY:
+                ParseBody_(line);
+                break;
+            default:
+                break;
         }
         if(lineEnd == buff.BeginWrite()) { break; }
         buff.RetrieveUntil(lineEnd + 2); // 这里对buff已读部分进行跳过
@@ -160,34 +160,32 @@ void HttpRequest::ParseFileUpLoadBody_() {
     std::string find_str = "boundary=";
     std::size_t idx = header_["Content-Type"].find(find_str);
     if (idx == std::string::npos) return; // 没找到boundary信息 报文有误
-    else {
-        std::string boundary(header_["Content-Type"].begin() + idx + find_str.size(), header_["Content-Type"].end());
-        int boundary_len = boundary.size();
-        find_str = "Content-Type:";
-        idx = body_.find(find_str);
-        while (!(body_[idx] == '\r' && body_[idx + 1] == '\n')) ++idx;
-        idx += 4; // 两对\r\n
-        std::string file_data(body_.begin() + idx, body_.end() - boundary_len - 6); // 结尾 \r\n + “--” + 开头"--"
-        std::string file_name = "./user-msgs/default";
-        if (header_.find("Cookie") != header_.end()) { // 存在cookie
-            std::string cke = header_["Cookie"];
-            std::string sessionid = "";
-            size_t idx = cke.find("=");
-            if(idx != std::string::npos) {
-                sessionid = cke.substr(idx + 1, cke.size() - idx - 1);
-            }
-            std::string user_find = m_cookie->find_user_from_md5(sessionid);
-            if (!sessionid.empty() && user_find != "No user find") {
-                file_name = "./user-msgs/" + user_find;
-            }
+    std::string boundary(header_["Content-Type"].begin() + idx + find_str.size(), header_["Content-Type"].end());
+    int boundary_len = boundary.size();
+    find_str = "Content-Type:";
+    idx = body_.find(find_str);
+    while (!(body_[idx] == '\r' && body_[idx + 1] == '\n')) ++idx;
+    idx += 4; // 两对\r\n
+    std::string file_data(body_.begin() + idx, body_.end() - boundary_len - 6); // 结尾 \r\n + “--” + 开头"--"
+    std::string file_name = "./user-msgs/default";
+    if (header_.find("Cookie") != header_.end()) { // 存在cookie
+        std::string cke = header_["Cookie"];
+        std::string sessionid = "";
+        size_t idx = cke.find("=");
+        if(idx != std::string::npos) {
+            sessionid = cke.substr(idx + 1, cke.size() - idx - 1);
         }
-        const char *file_begin_write = file_data.data();
-        FILE *file;
-        file = fopen(file_name.c_str(), "w");
-        fwrite(file_begin_write, file_data.size(), 1, file);
-        fflush(file);
-        fclose(file);
+        std::string user_find = m_cookie->find_user_from_md5(sessionid);
+        if (!sessionid.empty() && user_find != "No user find") {
+            file_name = "./user-msgs/" + user_find;
+        }
     }
+    const char *file_begin_write = file_data.data();
+    FILE *file;
+    file = fopen(file_name.c_str(), "w");
+    fwrite(file_begin_write, file_data.size(), 1, file);
+    fflush(file);
+    fclose(file);
 }
 
 void HttpRequest::ParseFromUrlencoded_() {

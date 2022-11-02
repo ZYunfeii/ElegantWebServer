@@ -84,7 +84,7 @@ void WebServer::Start() {
     if(!isClose_) { LOG_INFO("========== Server start =========="); }
     while(!isClose_) {
         if(timeoutMS_ > 0) {
-            timeMS = timer_->GetNextTick();
+            timeMS = timer_->GetNextTick(); // 内部会更新一次timer中节点的生存期，返回目前最短的生存期
         }
         int eventCnt = epoller_->Wait(timeMS); // 返回到来的事件数量
         for(int i = 0; i < eventCnt; i++) {
@@ -186,7 +186,7 @@ void WebServer::DealSignal_() {
                     LOG_INFO("Receive signal: SIGHUP!");
                     continue; // 守护进程运行
                 }
-                case SIGINT: {
+                case SIGINT: { // ctrl+c
                     isClose_ = true;
                     LOG_INFO("Receive signal: SIGINT!");
                     break;
@@ -221,7 +221,7 @@ void WebServer::OnProcess(HttpConn* client) {
     if(client->process()) { // 执行http核心函数process 
         epoller_->ModFd(client->GetFd(), connEvent_ | EPOLLOUT); // 内部使用epoll_ctl设置event，注意这里会直接触发一次EPOLLOUT事件，主线程开始处理写任务
     } else {
-        epoller_->ModFd(client->GetFd(), connEvent_ | EPOLLIN);
+        epoller_->ModFd(client->GetFd(), connEvent_ | EPOLLIN); // 继续在接受状态
     }
 }
 
@@ -271,7 +271,7 @@ bool WebServer::InitSocket_() {
         return false;
     }
 
-    ret = setsockopt(listenFd_, SOL_SOCKET, SO_LINGER, &optLinger, sizeof(optLinger));
+    ret = setsockopt(listenFd_, SOL_SOCKET, SO_LINGER, &optLinger, sizeof(optLinger)); // 设置优雅关闭 如果想要在套接字级别上设置选项，就必须把level设置为SOL_SOCKET
     if(ret < 0) {
         close(listenFd_);
         LOG_ERROR("Init linger error!", port_);
@@ -310,7 +310,7 @@ bool WebServer::InitSocket_() {
     SetFdNonblock(listenFd_);
     LOG_INFO("Server port:%d", port_);
 
-    ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
+    ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd); // 创建一对互相连接着的socket描述符 用于信号处理
     assert(ret != -1);
     SetFdNonblock(pipefd[1]);
     ret = epoller_->AddFd(pipefd[0],  EPOLLET | EPOLLIN);

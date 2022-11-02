@@ -46,7 +46,7 @@ MYSQL* SqlConnPool::GetConn() {
         LOG_WARN("SqlConnPool busy!");
         return nullptr;
     }
-    sem_wait(&semId_);
+    sem_wait(&semId_); // P
     {
         lock_guard<mutex> locker(mtx_);
         sql = connQue_.front();
@@ -59,7 +59,7 @@ void SqlConnPool::FreeConn(MYSQL* sql) {
     assert(sql);
     lock_guard<mutex> locker(mtx_);
     connQue_.push(sql);
-    sem_post(&semId_);
+    sem_post(&semId_); // V
 }
 
 void SqlConnPool::ClosePool() {
