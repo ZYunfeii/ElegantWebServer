@@ -15,6 +15,7 @@
 #include "../buffer/buffer.h"
 #include "../log/log.h"
 #include "httprequest.h"
+#include "../redis/rediscache.h"
 
 class HttpResponse {
 public:
@@ -57,6 +58,10 @@ private:
     std::shared_ptr<cookie> mCookie_;
     bool ifTransNotFile_;
     std::string strTrans_;
+
+    bool hitRedisTag_;
+    char* redisFile_;
+    size_t redisFileLen_;
 };
 
 

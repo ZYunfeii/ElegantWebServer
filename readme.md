@@ -14,4 +14,9 @@
   - [x] 新增主页访问量显示（前端ajax发送GET请求，后端增加对非文件GET请求响应）。
   - [x] 增加服务器对信号的处理，改写SIGHUP信号处理，使服务器可以以守护进程运行。
 
+# 注意
+- 在根目录运行 `/bin/server`
+- 在根目录运行 `redis-server ./code/redis/redis.conf`
+- redis默认AOF持久化
+
 ​		

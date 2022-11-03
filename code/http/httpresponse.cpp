@@ -53,6 +53,9 @@ HttpResponse::HttpResponse() {
     isKeepAlive_ = false;
     mmFile_ = nullptr; 
     mmFileStat_ = { 0 };
+    hitRedisTag_ = false;
+    redisFile_ = nullptr;
+    redisFileLen_ = 0;
 };
 
 HttpResponse::~HttpResponse() {
@@ -75,6 +78,8 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
 }
 
 void HttpResponse::MakeResponse(Buffer& buff) {
+    
+    
     /* 判断请求的资源文件 */
     if (!ifTransNotFile_){
         if(stat((srcDir_ + path_).data(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) { // stat通过文件名filename获取文件信息，并保存在mmFileStat_中(其中有size等信息)
@@ -82,9 +87,6 @@ void HttpResponse::MakeResponse(Buffer& buff) {
         }
         else if(!(mmFileStat_.st_mode & S_IROTH)) {
             code_ = 403;
-        }
-        else if(code_ == -1) { 
-            code_ = 200; 
         }
     } 
     ErrorHtml_();
