@@ -73,11 +73,12 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
     mCookie_ = cke;
     if (STRING_GET.find(path_) != STRING_GET.end()) ifTransNotFile_ = true; // 非文件请求
     else ifTransNotFile_ = false;
-    redis_ = RedisCache::Instance();
 }
 
 void HttpResponse::MakeResponse(Buffer& buff) {
-    hitRedisTag_ = redis_->existKey(path_);
+    RedisCache* rc = nullptr;
+    RedisConnRAII(&rc, RedisPool::instance());
+    hitRedisTag_ = rc->existKey(path_);
 
     /* 判断请求的资源文件 命中Redis就不要去开文件了*/
     if (!ifTransNotFile_ && !hitRedisTag_){
@@ -136,9 +137,11 @@ void HttpResponse::AddHeader_(Buffer& buff) {
 }
 
 void HttpResponse::AddContent_(Buffer& buff) {
+    RedisCache* rc = nullptr;
+    RedisConnRAII(&rc, RedisPool::instance());
     // 若命中Redis缓存，从中直接取出返回
     if (hitRedisTag_) {
-        redisFile_ = redis_->getKeyVal(path_);
+        redisFile_ = rc->getKeyVal(path_);
         mmFileStat_.st_size = redisFile_.length();
         mmFile_ = const_cast<char*>(redisFile_.data());
         buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
@@ -165,7 +168,7 @@ void HttpResponse::AddContent_(Buffer& buff) {
         close(srcFd);
         buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
         string tmp(mmFile_, mmFile_ + mmFileStat_.st_size);
-        if (!redis_->setKeyVal(path_, tmp)) {
+        if (!rc->setKeyVal(path_, tmp)) {
             LOG_DEBUG("Set key error!");
         }
         return;

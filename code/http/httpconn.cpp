@@ -28,13 +28,14 @@ void HttpConn::init(int fd, const sockaddr_in& addr) {
     writeBuff_.RetrieveAll(); // 清空
     readBuff_.RetrieveAll();  // 清空
     isClose_ = false;
-    redis_ = RedisCache::Instance();
     LOG_INFO("Client[%d](%s:%d) in, userCount:%d", fd_, GetIP(), GetPort(), (int)userCount);
     
-    if (!redis_->existKey("/get-num-visits")) {
-        redis_->setKeyVal("/get-num-visits", "1");
+    RedisCache* rc = nullptr;
+    RedisConnRAII(&rc, RedisPool::instance());
+    if (!rc->existKey("/get-num-visits")) {
+        rc->setKeyVal("/get-num-visits", "1");
     } else {
-        redis_->incr("/get-num-visits");
+        rc->incr("/get-num-visits");
     }
 }
 

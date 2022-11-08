@@ -1,29 +1,15 @@
 #include "rediscache.h"
 
-RedisCache* RedisCache::cache_ = nullptr;
-std::mutex RedisCache::mtx_;
-std::mutex RedisCache::rmtx_;
-
 /* hiredis.h中的context不是线程安全的，并发会有问题 */
+std::mutex RedisCache::mtx_;
 
 RedisCache::RedisCache() : ctx_(nullptr) {}
 
-RedisCache* RedisCache::Instance() {
-    if (cache_ == nullptr) {
-        std::lock_guard<std::mutex> lk(mtx_);
-        if (cache_ == nullptr) {
-            cache_ = new RedisCache;
-        }
-    }
-    return cache_;
-}
-
 RedisCache::~RedisCache () {
-    delete cache_;
 }
 
-bool RedisCache::init(const char* ip, int port) {
-    ctx_ = redisConnect(ip, port); // redis 默认6379端口
+bool RedisCache::init(const char* host, int port) {
+    ctx_ = redisConnect(host, port); // redis 默认6379端口
     if (ctx_->err) {
         redisFree(ctx_);
         LOG_ERROR("Connect to redisServer fail");
@@ -34,7 +20,7 @@ bool RedisCache::init(const char* ip, int port) {
 }
 
 bool RedisCache::setKeyVal(std::string key, std::string val) const {
-    std::lock_guard<std::mutex> lk(rmtx_);
+    std::lock_guard<std::mutex> lk(mtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }
@@ -44,13 +30,12 @@ bool RedisCache::setKeyVal(std::string key, std::string val) const {
         freeReplyObject(r);
         return false;
     }
-    LOG_INFO("Excute set %s successfully.", key.c_str());
     freeReplyObject(r);
     return true;
 }
 
 std::string RedisCache::getKeyVal(std::string key) const {
-    std::lock_guard<std::mutex> lk(rmtx_);
+    std::lock_guard<std::mutex> lk(mtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }
@@ -72,7 +57,7 @@ std::string RedisCache::getKeyVal(std::string key) const {
 }
 
 bool RedisCache::existKey(std::string key) const {
-    std::lock_guard<std::mutex> lk(rmtx_);
+    std::lock_guard<std::mutex> lk(mtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }
@@ -84,12 +69,11 @@ bool RedisCache::existKey(std::string key) const {
         return false; 
     }
     freeReplyObject(r);
-    LOG_INFO("Excute exists %s successfully.", key.c_str());
     return r->integer == 1;
 }
 
 bool RedisCache::incr(std::string key) const {
-    std::lock_guard<std::mutex> lk(rmtx_);
+    std::lock_guard<std::mutex> lk(mtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }
@@ -107,6 +91,7 @@ bool RedisCache::incr(std::string key) const {
 }
 
 bool RedisCache::flushDB() const {
+    std::lock_guard<std::mutex> lk(mtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }
@@ -123,6 +108,7 @@ bool RedisCache::flushDB() const {
 }
 
 bool RedisCache::delKey(std::string key) const {
+    std::lock_guard<std::mutex> lk(mtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }

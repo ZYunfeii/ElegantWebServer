@@ -15,7 +15,7 @@
 #include "../buffer/buffer.h"
 #include "../log/log.h"
 #include "httprequest.h"
-#include "../redis/rediscache.h"
+#include "../redis/redisconnRAII.h"
 
 class HttpResponse {
 public:
@@ -54,7 +54,6 @@ private:
     bool hitRedisTag_;
     std::string redisFile_;
     size_t redisFileLen_;
-    RedisCache* redis_;
 
 public:
     static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;

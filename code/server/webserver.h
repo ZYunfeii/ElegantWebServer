@@ -23,7 +23,7 @@
 #include "../pool/threadpool.h"
 #include "../pool/sqlconnRAII.h"
 #include "../http/httpconn.h"
-#include "../redis/rediscache.h"
+#include "../redis/redispool.h"
 
 class WebServer {
 public:
@@ -32,7 +32,7 @@ public:
         int sqlPort, const char* sqlUser, const  char* sqlPwd, 
         const char* dbName, int connPoolNum, int threadNum,
         bool openLog, int logLevel, int logQueSize, 
-        char* redisIP, int redisPort);
+        char* redisIP, int redisPort, int redisConnNum);
 
     ~WebServer();
     void Start();
