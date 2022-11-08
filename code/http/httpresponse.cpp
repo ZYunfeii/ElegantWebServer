@@ -6,7 +6,7 @@
 #include "httpresponse.h"
 
 using namespace std;
-extern size_t visits;
+
 
 const unordered_map<string, string> HttpResponse::SUFFIX_TYPE = {
     { ".html",  "text/html" },
@@ -43,8 +43,8 @@ const unordered_map<int, string> HttpResponse::CODE_PATH = {
     { 404, "/404.html" },
 };
 
-const unordered_map<string, string> HttpResponse::STRING_GET = {
-    {"/get-num-visits", "numVisits"}, 
+const unordered_set<string> HttpResponse::STRING_GET = {
+    "/get-num-visits", 
 };
 
 HttpResponse::HttpResponse() {
@@ -68,7 +68,6 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
     isKeepAlive_ = isKeepAlive;
     path_ = path;
     srcDir_ = srcDir;
-    strTrans_ = "";
     mmFile_ = nullptr; 
     mmFileStat_ = { 0 };
     mCookie_ = cke;
@@ -78,12 +77,9 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
 }
 
 void HttpResponse::MakeResponse(Buffer& buff) {
-    hitRedisTag_ = (redis_->getKeyVal(path_) != "nil");
-    // for (auto it = STRING_GET.begin(); it != STRING_GET.end(); ++it) {
-    //     hitRedisTag_ |= RedisCache::Instance()->existKey(it->second);
-    // }
+    hitRedisTag_ = redis_->existKey(path_);
 
-    /* 判断请求的资源文件 */
+    /* 判断请求的资源文件 命中Redis就不要去开文件了*/
     if (!ifTransNotFile_ && !hitRedisTag_){
         if(stat((srcDir_ + path_).data(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) { // stat通过文件名filename获取文件信息，并保存在mmFileStat_中(其中有size等信息)
             code_ = 404;
@@ -146,7 +142,7 @@ void HttpResponse::AddContent_(Buffer& buff) {
         mmFileStat_.st_size = redisFile_.length();
         mmFile_ = const_cast<char*>(redisFile_.data());
         buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
-        LOG_INFO("Return redis cache: %s", path_);
+        LOG_INFO("Return redis cache: %s", path_.data());
         return;
     }
     // 若没有命中Redis缓存
@@ -172,9 +168,9 @@ void HttpResponse::AddContent_(Buffer& buff) {
         if (!redis_->setKeyVal(path_, tmp)) {
             LOG_DEBUG("Set key error!");
         }
-    } else { // 传输的非文件
-        // ToDo
-    }
+        return;
+    }    
+    // ToDo: 传输非文件 
 }
 
 void HttpResponse::UnmapFile() {
@@ -218,12 +214,4 @@ void HttpResponse::ErrorContent(Buffer& buff, string message)
 
 bool HttpResponse::ifTransNotFile() {
     return ifTransNotFile_;
-}
-
-char*  HttpResponse::GetTransStrToCharPtr() {
-    return const_cast<char*>(strTrans_.c_str());
-}
-
-size_t HttpResponse::StrLen() const {
-    return strTrans_.size();
 }

@@ -30,11 +30,11 @@ void HttpConn::init(int fd, const sockaddr_in& addr) {
     isClose_ = false;
     redis_ = RedisCache::Instance();
     LOG_INFO("Client[%d](%s:%d) in, userCount:%d", fd_, GetIP(), GetPort(), (int)userCount);
-
-    if (redis_->getKeyVal("numVisits") == "nil") {
-        redis_->setKeyVal("numVisits", "1");
+    
+    if (!redis_->existKey("/get-num-visits")) {
+        redis_->setKeyVal("/get-num-visits", "1");
     } else {
-        redis_->incr("numVisits");
+        redis_->incr("/get-num-visits");
     }
 }
 
@@ -124,17 +124,13 @@ bool HttpConn::process() {
     iovCnt_ = 1;
     // 头和文件是在两块不连续的内存上的，使用分散写
     /* 文件 */
-    if (!response_.ifTransNotFile()){
-        if(response_.FileLen() > 0  && response_.File()) {
-            iov_[1].iov_base = response_.File();
-            iov_[1].iov_len = response_.FileLen();
-            iovCnt_ = 2;
-        }
-    } else { // 字符串传输 用于ajax
-        iov_[1].iov_base = response_.GetTransStrToCharPtr();
-        iov_[1].iov_len = response_.StrLen();
+
+    if(response_.FileLen() > 0  && response_.File()) {
+        iov_[1].iov_base = response_.File();
+        iov_[1].iov_len = response_.FileLen();
         iovCnt_ = 2;
     }
+
     LOG_DEBUG("filesize:%d, %d  to %d", response_.FileLen() , iovCnt_, ToWriteBytes());
     return true;
 }

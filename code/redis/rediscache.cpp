@@ -4,6 +4,8 @@ RedisCache* RedisCache::cache_ = nullptr;
 std::mutex RedisCache::mtx_;
 std::mutex RedisCache::rmtx_;
 
+/* hiredis.h中的context不是线程安全的，并发会有问题 */
+
 RedisCache::RedisCache() : ctx_(nullptr) {}
 
 RedisCache* RedisCache::Instance() {

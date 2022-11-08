@@ -30,8 +30,6 @@ public:
     void ErrorContent(Buffer& buff, std::string message);
     int Code() const { return code_; }
     bool ifTransNotFile();
-    char* GetTransStrToCharPtr();
-    size_t StrLen() const;
 
 private:
     void AddStateLine_(Buffer &buff);
@@ -50,19 +48,19 @@ private:
     char* mmFile_; 
     struct stat mmFileStat_;
 
-    static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;
-    static const std::unordered_map<int, std::string> CODE_STATUS;
-    static const std::unordered_map<int, std::string> CODE_PATH;
-    static const std::unordered_map<std::string, std::string> STRING_GET;
-
     std::shared_ptr<cookie> mCookie_;
     bool ifTransNotFile_;
-    std::string strTrans_;
 
     bool hitRedisTag_;
     std::string redisFile_;
     size_t redisFileLen_;
     RedisCache* redis_;
+
+public:
+    static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;
+    static const std::unordered_map<int, std::string> CODE_STATUS;
+    static const std::unordered_map<int, std::string> CODE_PATH;
+    static const std::unordered_set<std::string> STRING_GET;
 };
 
 
