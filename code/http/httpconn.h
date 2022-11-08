@@ -70,6 +70,7 @@ private:
 
     HttpRequest request_;
     HttpResponse response_;
+    RedisCache* redis_;
 };
 
 

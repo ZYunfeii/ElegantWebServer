@@ -9,7 +9,6 @@ using namespace std;
 const char* HttpConn::srcDir; // 全局的，在webserver.cpp中定义
 std::atomic<int> HttpConn::userCount;
 bool HttpConn::isET;
-size_t visits = 0; // 访问量
 
 HttpConn::HttpConn() { 
     fd_ = -1;
@@ -23,14 +22,20 @@ HttpConn::~HttpConn() {
 
 void HttpConn::init(int fd, const sockaddr_in& addr) {
     assert(fd > 0);
-    userCount++;
-    visits++;     
+    userCount++;     
     addr_ = addr;
     fd_ = fd;
     writeBuff_.RetrieveAll(); // 清空
     readBuff_.RetrieveAll();  // 清空
     isClose_ = false;
+    redis_ = RedisCache::Instance();
     LOG_INFO("Client[%d](%s:%d) in, userCount:%d", fd_, GetIP(), GetPort(), (int)userCount);
+
+    if (redis_->getKeyVal("numVisits") == "nil") {
+        redis_->setKeyVal("numVisits", "1");
+    } else {
+        redis_->incr("numVisits");
+    }
 }
 
 void HttpConn::Close() {

@@ -2,6 +2,7 @@
 
 RedisCache* RedisCache::cache_ = nullptr;
 std::mutex RedisCache::mtx_;
+std::mutex RedisCache::rmtx_;
 
 RedisCache::RedisCache() : ctx_(nullptr) {}
 
@@ -31,35 +32,34 @@ bool RedisCache::init(const char* ip, int port) {
 }
 
 bool RedisCache::setKeyVal(std::string key, std::string val) const {
+    std::lock_guard<std::mutex> lk(rmtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }
-    std::string command = "set ";
-    command += key;
-    command += " ";
-    command += val;
-    redisReply* r = (redisReply*)redisCommand(ctx_, command.c_str()); 
+    redisReply* r = (redisReply*)redisCommand(ctx_, "set %s %b", key.c_str(), val.c_str(), val.length()); 
     if (r == nullptr) {
-        LOG_ERROR("Excute command %s failure.", command.c_str());
+        LOG_ERROR("Excute set %s failure.", key.c_str());
+        freeReplyObject(r);
         return false;
     }
-    LOG_INFO("Excute command %s successfully.", command.c_str());
+    LOG_INFO("Excute set %s successfully.", key.c_str());
+    freeReplyObject(r);
     return true;
 }
 
 std::string RedisCache::getKeyVal(std::string key) const {
+    std::lock_guard<std::mutex> lk(rmtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }
-    std::string command = "get ";
-    command += key;
-    redisReply* r = (redisReply*)redisCommand(ctx_, command.c_str()); 
+    redisReply* r = (redisReply*)redisCommand(ctx_, "get %s", key.c_str());
     if (r->type == REDIS_REPLY_NIL) {
+        LOG_INFO("Key %s is nil.", key.c_str());
         freeReplyObject(r);
         return "nil";
     }
     if (r->type != REDIS_REPLY_STRING) {
-        LOG_ERROR("Failed to execute command %s.", command.c_str());
+        LOG_ERROR("Failed to get key %s.", key.c_str());
         freeReplyObject(r); 
         redisFree(ctx_); 
         return ""; 
@@ -70,10 +70,28 @@ std::string RedisCache::getKeyVal(std::string key) const {
 }
 
 bool RedisCache::existKey(std::string key) const {
+    std::lock_guard<std::mutex> lk(rmtx_);
     if (!check()) {
         LOG_ERROR("No connection to Redis.");
     }
-    std::string command = "exists ";
+    redisReply* r = (redisReply*)redisCommand(ctx_, "exists %s", key.c_str());
+    if (r->type != REDIS_REPLY_INTEGER) {
+        LOG_ERROR("Failed to execute exists %s.", key.c_str());
+        freeReplyObject(r); 
+        redisFree(ctx_); 
+        return false; 
+    }
+    freeReplyObject(r);
+    LOG_INFO("Excute exists %s successfully.", key.c_str());
+    return r->integer == 1;
+}
+
+bool RedisCache::incr(std::string key) const {
+    std::lock_guard<std::mutex> lk(rmtx_);
+    if (!check()) {
+        LOG_ERROR("No connection to Redis.");
+    }
+    std::string command = "incr ";
     command += key;
     redisReply* r = (redisReply*)redisCommand(ctx_, command.c_str()); 
     if (r->type != REDIS_REPLY_INTEGER) {

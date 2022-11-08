@@ -14,6 +14,7 @@ public:
     bool setKeyVal(std::string key, std::string val) const;
     std::string getKeyVal(std::string key) const;
     bool existKey(std::string key) const;
+    bool incr(std::string key) const;
     bool flushDB() const;
     bool check() const;
     bool delKey(std::string key) const;
@@ -23,6 +24,7 @@ private:
     redisContext* ctx_;
     static RedisCache* cache_;
     static std::mutex mtx_;
+    static std::mutex rmtx_;
 };
 
 #endif 

@@ -17,7 +17,8 @@ WebServer::WebServer(
             int port, int trigMode, int timeoutMS, bool OptLinger,
             int sqlPort, const char* sqlUser, const  char* sqlPwd,
             const char* dbName, int connPoolNum, int threadNum,
-            bool openLog, int logLevel, int logQueSize):
+            bool openLog, int logLevel, int logQueSize,
+            char* redisIP, int redisPort):
             port_(port), openLinger_(OptLinger), timeoutMS_(timeoutMS), isClose_(false),
             timer_(new HeapTimer()), threadpool_(new ThreadPool(threadNum)), epoller_(new Epoller())
     {
@@ -27,7 +28,7 @@ WebServer::WebServer(
     HttpConn::userCount = 0;
     HttpConn::srcDir = srcDir_;
     SqlConnPool::Instance()->Init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);
-
+    
     InitEventMode_(trigMode);
     if(!InitSocket_()) { isClose_ = true;}
 
@@ -45,6 +46,7 @@ WebServer::WebServer(
             LOG_INFO("SqlConnPool num: %d, ThreadPool num: %d", connPoolNum, threadNum);
         }
     }
+    RedisCache::Instance()->init(redisIP, redisPort);
 }
 
 WebServer::~WebServer() {

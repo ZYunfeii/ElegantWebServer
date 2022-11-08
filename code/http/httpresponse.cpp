@@ -43,8 +43,8 @@ const unordered_map<int, string> HttpResponse::CODE_PATH = {
     { 404, "/404.html" },
 };
 
-const unordered_set<string> HttpResponse::STRING_GET = {
-    "/get-num-visits"
+const unordered_map<string, string> HttpResponse::STRING_GET = {
+    {"/get-num-visits", "numVisits"}, 
 };
 
 HttpResponse::HttpResponse() {
@@ -54,8 +54,7 @@ HttpResponse::HttpResponse() {
     mmFile_ = nullptr; 
     mmFileStat_ = { 0 };
     hitRedisTag_ = false;
-    redisFile_ = nullptr;
-    redisFileLen_ = 0;
+    redisFile_ = "";
 };
 
 HttpResponse::~HttpResponse() {
@@ -75,13 +74,17 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
     mCookie_ = cke;
     if (STRING_GET.find(path_) != STRING_GET.end()) ifTransNotFile_ = true; // 非文件请求
     else ifTransNotFile_ = false;
+    redis_ = RedisCache::Instance();
 }
 
 void HttpResponse::MakeResponse(Buffer& buff) {
-    
-    
+    hitRedisTag_ = (redis_->getKeyVal(path_) != "nil");
+    // for (auto it = STRING_GET.begin(); it != STRING_GET.end(); ++it) {
+    //     hitRedisTag_ |= RedisCache::Instance()->existKey(it->second);
+    // }
+
     /* 判断请求的资源文件 */
-    if (!ifTransNotFile_){
+    if (!ifTransNotFile_ && !hitRedisTag_){
         if(stat((srcDir_ + path_).data(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) { // stat通过文件名filename获取文件信息，并保存在mmFileStat_中(其中有size等信息)
             code_ = 404;
         }
@@ -137,6 +140,16 @@ void HttpResponse::AddHeader_(Buffer& buff) {
 }
 
 void HttpResponse::AddContent_(Buffer& buff) {
+    // 若命中Redis缓存，从中直接取出返回
+    if (hitRedisTag_) {
+        redisFile_ = redis_->getKeyVal(path_);
+        mmFileStat_.st_size = redisFile_.length();
+        mmFile_ = const_cast<char*>(redisFile_.data());
+        buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
+        LOG_INFO("Return redis cache: %s", path_);
+        return;
+    }
+    // 若没有命中Redis缓存
     if (!ifTransNotFile_) {
         int srcFd = open((srcDir_ + path_).data(), O_RDONLY);
         if(srcFd < 0) { 
@@ -155,9 +168,12 @@ void HttpResponse::AddContent_(Buffer& buff) {
         mmFile_ = (char*)mmRet;
         close(srcFd);
         buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
-    } else { // 传输的非文件，仅仅是字符串
-        strTrans_ = to_string(visits / 6);
-        buff.Append("Content-length: " + to_string(strTrans_.size()) + "\r\n\r\n");
+        string tmp(mmFile_, mmFile_ + mmFileStat_.st_size);
+        if (!redis_->setKeyVal(path_, tmp)) {
+            LOG_DEBUG("Set key error!");
+        }
+    } else { // 传输的非文件
+        // ToDo
     }
 }
 

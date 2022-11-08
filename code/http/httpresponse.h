@@ -53,15 +53,16 @@ private:
     static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;
     static const std::unordered_map<int, std::string> CODE_STATUS;
     static const std::unordered_map<int, std::string> CODE_PATH;
-    static const std::unordered_set<std::string> STRING_GET;
+    static const std::unordered_map<std::string, std::string> STRING_GET;
 
     std::shared_ptr<cookie> mCookie_;
     bool ifTransNotFile_;
     std::string strTrans_;
 
     bool hitRedisTag_;
-    char* redisFile_;
+    std::string redisFile_;
     size_t redisFileLen_;
+    RedisCache* redis_;
 };
 
 
