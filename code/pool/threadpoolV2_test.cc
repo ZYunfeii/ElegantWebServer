@@ -25,34 +25,29 @@ void task4() {
 int main(int argc, char** argv) {
     auto p = new ThreadPoolV2(4);  
     thread([p](){
-        while (true) {
+        for(int i = 0; i < 5; ++i) {
             p->addTask(bind(task1));
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }).detach();
     thread([p](){
-        while (true) {
+        for(int i = 0; i < 5; ++i) {
             p->addTask(bind(task2));
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }).detach();
     thread([p](){
-        while (true) {
+        for(int i = 0; i < 5; ++i) {
             p->addTask(bind(task3));
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }).detach();
     thread([p](){
-        while (true) {
+        for(int i = 0; i < 5; ++i) {
             p->addTask(bind(task4));
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }).detach();
-
-
-    while (1) {
-        cout << p->getDoTaskThreadNum() << endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     return 0;
 }

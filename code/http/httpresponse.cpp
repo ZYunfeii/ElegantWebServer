@@ -78,10 +78,10 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
 void HttpResponse::MakeResponse(Buffer& buff) {
     RedisCache* rc = nullptr;
     RedisConnRAII(&rc, RedisPool::instance());
-    hitRedisTag_ = rc->existKey(path_);
+    redisFile_ = rc->getKeyVal(path_);
 
     /* 判断请求的资源文件 命中Redis就不要去开文件了*/
-    if (!ifTransNotFile_ && !hitRedisTag_){
+    if (!ifTransNotFile_ && redisFile_ == "nil"){
         if(stat((srcDir_ + path_).data(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) { // stat通过文件名filename获取文件信息，并保存在mmFileStat_中(其中有size等信息)
             code_ = 404;
         }
@@ -140,8 +140,7 @@ void HttpResponse::AddContent_(Buffer& buff) {
     RedisCache* rc = nullptr;
     RedisConnRAII(&rc, RedisPool::instance());
     // 若命中Redis缓存，从中直接取出返回
-    if (hitRedisTag_) {
-        redisFile_ = rc->getKeyVal(path_);
+    if (redisFile_ != "nil") {
         mmFileStat_.st_size = redisFile_.length();
         mmFile_ = const_cast<char*>(redisFile_.data());
         buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
@@ -167,8 +166,7 @@ void HttpResponse::AddContent_(Buffer& buff) {
         mmFile_ = (char*)mmRet;
         close(srcFd);
         buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
-        string tmp(mmFile_, mmFile_ + mmFileStat_.st_size);
-        if (!rc->setKeyVal(path_, tmp)) {
+        if (!rc->setKeyVal(path_, mmFile_, mmFileStat_.st_size)) {
             LOG_DEBUG("Set key error!");
         }
         return;

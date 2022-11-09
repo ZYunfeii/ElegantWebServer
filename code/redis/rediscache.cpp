@@ -31,6 +31,18 @@ bool RedisCache::setKeyVal(std::string key, std::string val) const {
     return true;
 }
 
+bool RedisCache::setKeyVal(std::string key, char* val, int sz) const {
+    std::lock_guard<std::mutex> lk(mtx_);
+    redisReply* r = (redisReply*)redisCommand(ctx_, "set %s %b", key.c_str(), val, sz); 
+    if (r == nullptr) {
+        LOG_ERROR("Excute set %s failure.", key.c_str());
+        freeReplyObject(r);
+        return false;
+    }
+    freeReplyObject(r);
+    return true;
+}
+
 std::string RedisCache::getKeyVal(std::string key) const {
     std::lock_guard<std::mutex> lk(mtx_);
     redisReply* r = (redisReply*)redisCommand(ctx_, "get %s", key.c_str());

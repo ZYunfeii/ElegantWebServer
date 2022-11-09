@@ -13,6 +13,7 @@ public:
     ~RedisCache();
     bool init(const char* host, int port);
     bool setKeyVal(std::string key, std::string val) const;
+    bool setKeyVal(std::string key, char* val, int sz) const;
     std::string getKeyVal(std::string key) const;
     bool existKey(std::string key) const;
     bool incr(std::string key) const;

@@ -49,6 +49,10 @@ public:
     }
 
     ~ThreadPoolV2() {
+        shutdown();
+    }
+
+    void shutdown() {
         pool_->isClosed_.store(true);
         pool_->cond_.notify_all();
     }
