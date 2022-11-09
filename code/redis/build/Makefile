@@ -2,7 +2,7 @@ CXX = g++
 CFLAGS = -std=c++14 -O2 -Wall -g 
 
 TARGET = redistest
-OBJS = ../*.cpp ../../log/*.cpp ../../buffer/*.cpp
+OBJS = ../*.cpp ../../log/*.cpp ../../buffer/*.cpp ../rediscache_test.cc
 
 all: $(OBJS)
 	$(CXX) $(CFLAGS) $(OBJS) -o ../$(TARGET)  -pthread -lhiredis

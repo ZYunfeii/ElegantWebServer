@@ -20,7 +20,7 @@ WebServer::WebServer(
             bool openLog, int logLevel, int logQueSize,
             char* redisIP, int redisPort, int redisConnNum):
             port_(port), openLinger_(OptLinger), timeoutMS_(timeoutMS), isClose_(false),
-            timer_(new HeapTimer()), threadpool_(new ThreadPool(threadNum)), epoller_(new Epoller())
+            timer_(new HeapTimer()), threadpool_(new ThreadPoolV2(threadNum)), epoller_(new Epoller())
     {
     srcDir_ = getcwd(nullptr, 256); // 运行一定得./bin/server 不然路径会错
     assert(srcDir_);
@@ -162,13 +162,13 @@ void WebServer::DealListen_() {
 void WebServer::DealRead_(HttpConn* client) {
     assert(client);
     ExtentTime_(client);
-    threadpool_->AddTask(std::bind(&WebServer::OnRead_, this, client)); // 回调绑定
+    threadpool_->addTask(std::bind(&WebServer::OnRead_, this, client)); // 回调绑定
 }
 
 void WebServer::DealWrite_(HttpConn* client) {
     assert(client);
     ExtentTime_(client);
-    threadpool_->AddTask(std::bind(&WebServer::OnWrite_, this, client));
+    threadpool_->addTask(std::bind(&WebServer::OnWrite_, this, client));
 }
 
 void WebServer::DealSignal_() {

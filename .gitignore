@@ -11,4 +11,7 @@
 *.1
 *.log
 *.exe
-/.vscode
+*.rdb
+*.aof
+*.manifest
+

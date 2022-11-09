@@ -20,7 +20,7 @@
 #include "../log/log.h"
 #include "../timer/heaptimer.h"
 #include "../pool/sqlconnpool.h"
-#include "../pool/threadpool.h"
+#include "../pool/threadpoolv2.h"
 #include "../pool/sqlconnRAII.h"
 #include "../http/httpconn.h"
 #include "../redis/redispool.h"
@@ -72,7 +72,7 @@ private:
     uint32_t connEvent_;
    
     std::unique_ptr<HeapTimer> timer_;
-    std::unique_ptr<ThreadPool> threadpool_;
+    std::unique_ptr<ThreadPoolV2> threadpool_;
     std::unique_ptr<Epoller> epoller_;
     std::unordered_map<int, HttpConn> users_;
 };

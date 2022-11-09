@@ -17,7 +17,6 @@ public:
     bool existKey(std::string key) const;
     bool incr(std::string key) const;
     bool flushDB() const;
-    bool check() const;
     bool delKey(std::string key) const;
 private:
     redisContext* ctx_;

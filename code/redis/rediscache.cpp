@@ -21,9 +21,6 @@ bool RedisCache::init(const char* host, int port) {
 
 bool RedisCache::setKeyVal(std::string key, std::string val) const {
     std::lock_guard<std::mutex> lk(mtx_);
-    if (!check()) {
-        LOG_ERROR("No connection to Redis.");
-    }
     redisReply* r = (redisReply*)redisCommand(ctx_, "set %s %b", key.c_str(), val.c_str(), val.length()); 
     if (r == nullptr) {
         LOG_ERROR("Excute set %s failure.", key.c_str());
@@ -36,9 +33,6 @@ bool RedisCache::setKeyVal(std::string key, std::string val) const {
 
 std::string RedisCache::getKeyVal(std::string key) const {
     std::lock_guard<std::mutex> lk(mtx_);
-    if (!check()) {
-        LOG_ERROR("No connection to Redis.");
-    }
     redisReply* r = (redisReply*)redisCommand(ctx_, "get %s", key.c_str());
     if (r->type == REDIS_REPLY_NIL) {
         LOG_INFO("Key %s is nil.", key.c_str());
@@ -58,9 +52,6 @@ std::string RedisCache::getKeyVal(std::string key) const {
 
 bool RedisCache::existKey(std::string key) const {
     std::lock_guard<std::mutex> lk(mtx_);
-    if (!check()) {
-        LOG_ERROR("No connection to Redis.");
-    }
     redisReply* r = (redisReply*)redisCommand(ctx_, "exists %s", key.c_str());
     if (r->type != REDIS_REPLY_INTEGER) {
         LOG_ERROR("Failed to execute exists %s.", key.c_str());
@@ -74,9 +65,6 @@ bool RedisCache::existKey(std::string key) const {
 
 bool RedisCache::incr(std::string key) const {
     std::lock_guard<std::mutex> lk(mtx_);
-    if (!check()) {
-        LOG_ERROR("No connection to Redis.");
-    }
     std::string command = "incr ";
     command += key;
     redisReply* r = (redisReply*)redisCommand(ctx_, command.c_str()); 
@@ -92,9 +80,6 @@ bool RedisCache::incr(std::string key) const {
 
 bool RedisCache::flushDB() const {
     std::lock_guard<std::mutex> lk(mtx_);
-    if (!check()) {
-        LOG_ERROR("No connection to Redis.");
-    }
     std::string command = "flushdb";
     redisReply* r = (redisReply*)redisCommand(ctx_, command.c_str()); 
     if (r->type != REDIS_REPLY_STATUS) {
@@ -109,9 +94,6 @@ bool RedisCache::flushDB() const {
 
 bool RedisCache::delKey(std::string key) const {
     std::lock_guard<std::mutex> lk(mtx_);
-    if (!check()) {
-        LOG_ERROR("No connection to Redis.");
-    }
     std::string command = "del ";
     command += key;
     redisReply* r = (redisReply*)redisCommand(ctx_, command.c_str());
@@ -125,10 +107,4 @@ bool RedisCache::delKey(std::string key) const {
     return true;
 }
 
-bool RedisCache::check() const {
-    if (ctx_ == nullptr || ctx_->err) {
-        return false;
-    }
-    return true;
-}
 
