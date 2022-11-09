@@ -54,7 +54,6 @@ std::string RedisCache::getKeyVal(std::string key) const {
     if (r->type != REDIS_REPLY_STRING) {
         LOG_ERROR("Failed to get key %s.", key.c_str());
         freeReplyObject(r); 
-        redisFree(ctx_); 
         return ""; 
     }
     std::string res(r->str, r->str + r->len);
@@ -68,11 +67,11 @@ bool RedisCache::existKey(std::string key) const {
     if (r->type != REDIS_REPLY_INTEGER) {
         LOG_ERROR("Failed to execute exists %s.", key.c_str());
         freeReplyObject(r); 
-        redisFree(ctx_); 
         return false; 
     }
+    int res = r->integer;
     freeReplyObject(r);
-    return r->integer == 1;
+    return res == 1;
 }
 
 bool RedisCache::incr(std::string key) const {
@@ -83,7 +82,6 @@ bool RedisCache::incr(std::string key) const {
     if (r->type != REDIS_REPLY_INTEGER) {
         LOG_ERROR("Failed to execute command %s.", command.c_str());
         freeReplyObject(r); 
-        redisFree(ctx_); 
         return false; 
     }
     freeReplyObject(r);
@@ -97,7 +95,6 @@ bool RedisCache::flushDB() const {
     if (r->type != REDIS_REPLY_STATUS) {
         LOG_ERROR("Failed to execute command %s.", command.c_str());
         freeReplyObject(r); 
-        redisFree(ctx_); 
         return false; 
     }
     freeReplyObject(r);
@@ -112,7 +109,6 @@ bool RedisCache::delKey(std::string key) const {
     if (r->type != REDIS_REPLY_INTEGER) {
         LOG_ERROR("Failed to execute command %s.", command.c_str());
         freeReplyObject(r); 
-        redisFree(ctx_); 
         return false; 
     }
     freeReplyObject(r);
