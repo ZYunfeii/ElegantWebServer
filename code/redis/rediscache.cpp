@@ -49,7 +49,7 @@ std::string RedisCache::getKeyVal(std::string key) const {
     if (r->type == REDIS_REPLY_NIL) {
         LOG_INFO("Key %s is nil.", key.c_str());
         freeReplyObject(r);
-        return "nil";
+        return noStr;
     }
     if (r->type != REDIS_REPLY_STRING) {
         LOG_ERROR("Failed to get key %s.", key.c_str());
@@ -113,6 +113,34 @@ bool RedisCache::delKey(std::string key) const {
     }
     freeReplyObject(r);
     return true;
+}
+
+bool RedisCache::listPush(std::string key, std::string val) const {
+    std::lock_guard<std::mutex> lk(mtx_);
+    redisReply* r = (redisReply*)redisCommand(ctx_, "lpush %s %s", key.c_str(), val.c_str(), val.length()); 
+    if (r->type == REDIS_REPLY_ERROR) {
+        LOG_ERROR("Excute list push %s failure.", key.c_str());
+        freeReplyObject(r);
+        return false;
+    }
+    freeReplyObject(r);
+    return true;
+}
+
+std::vector<std::string> RedisCache::listRange(std::string key, int left, int right) const {
+    std::lock_guard<std::mutex> lk(mtx_);
+    redisReply* r = (redisReply*)redisCommand(ctx_, "lrange %s %d %d", key.c_str(), left, right); 
+    if (r->type == REDIS_REPLY_ERROR) {
+        LOG_ERROR("Excute list push %s failure.", key.c_str());
+        freeReplyObject(r);
+        return {};
+    }
+    std::vector<std::string> res;
+    for (int i = 0; i < r->elements; ++i) {
+        res.push_back(std::move(r->element[i]->str));
+    }
+    freeReplyObject(r);
+    return res;
 }
 
 

@@ -32,10 +32,10 @@ void HttpConn::init(int fd, const sockaddr_in& addr) {
     
     RedisCache* rc = nullptr;
     RedisConnRAII(&rc, RedisPool::instance());
-    if (!rc->existKey("/get-num-visits")) {
-        rc->setKeyVal("/get-num-visits", "1");
+    if (!rc->existKey(kNumVisits)) {
+        rc->setKeyVal(kNumVisits, "1");
     } else {
-        rc->incr("/get-num-visits");
+        rc->incr(kNumVisits);
     }
 }
 

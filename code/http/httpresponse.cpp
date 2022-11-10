@@ -23,11 +23,17 @@ const unordered_map<string, string> HttpResponse::SUFFIX_TYPE = {
     { ".au",    "audio/basic" },
     { ".mpeg",  "video/mpeg" },
     { ".mpg",   "video/mpeg" },
+    { ".mp4",   "video/mp4"  },
     { ".avi",   "video/x-msvideo" },
     { ".gz",    "application/x-gzip" },
     { ".tar",   "application/x-tar" },
     { ".css",   "text/css "},
     { ".js",    "text/javascript "},
+};
+
+// 不被redis缓存的文件格式
+const unordered_set<string> HttpResponse::NO_REDIS_CACHE = {
+    "video/mp4",
 };
 
 const unordered_map<int, string> HttpResponse::CODE_STATUS = {
@@ -43,8 +49,10 @@ const unordered_map<int, string> HttpResponse::CODE_PATH = {
     { 404, "/404.html" },
 };
 
-const unordered_set<string> HttpResponse::STRING_GET = {
-    "/get-num-visits", 
+const unordered_map<string, int> HttpResponse::STRING_GET = {
+    {"/get-num-visits", 0}, 
+    {"/get-comments"  , 1},
+    {"/set-comments"  , 2},
 };
 
 HttpResponse::HttpResponse() {
@@ -53,7 +61,6 @@ HttpResponse::HttpResponse() {
     isKeepAlive_ = false;
     mmFile_ = nullptr; 
     mmFileStat_ = { 0 };
-    hitRedisTag_ = false;
     redisFile_ = "";
 };
 
@@ -71,17 +78,29 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
     mmFile_ = nullptr; 
     mmFileStat_ = { 0 };
     mCookie_ = cke;
-    if (STRING_GET.find(path_) != STRING_GET.end()) ifTransNotFile_ = true; // 非文件请求
-    else ifTransNotFile_ = false;
+
+    auto splStr = ProcessPath_();
+    getStr_ = splStr[0];
+    getSrc_ = splStr[1];
+
+    ifTransNotFile_ = false;
+}
+
+void HttpResponse::CheckRedis_() {
+    RedisCache* rc = nullptr;
+    RedisConnRAII(&rc, RedisPool::instance());
+    if (STRING_GET.count(getStr_) != 0) {
+        redisFile_ = noStr;
+        ifTransNotFile_ = true;
+        return;
+    }
+    redisFile_ = rc->getKeyVal(path_);
 }
 
 void HttpResponse::MakeResponse(Buffer& buff) {
-    RedisCache* rc = nullptr;
-    RedisConnRAII(&rc, RedisPool::instance());
-    redisFile_ = rc->getKeyVal(path_);
-
+    CheckRedis_();
     /* 判断请求的资源文件 命中Redis就不要去开文件了*/
-    if (!ifTransNotFile_ && redisFile_ == "nil"){
+    if (!ifTransNotFile_ && redisFile_ == noStr){
         if(stat((srcDir_ + path_).data(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) { // stat通过文件名filename获取文件信息，并保存在mmFileStat_中(其中有size等信息)
             code_ = 404;
         }
@@ -136,18 +155,21 @@ void HttpResponse::AddHeader_(Buffer& buff) {
     }
 }
 
+void HttpResponse::MakeRedisResponse_(Buffer& buff) {
+    mmFileStat_.st_size = redisFile_.length();
+    mmFile_ = const_cast<char*>(redisFile_.data());
+    buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
+}
+
 void HttpResponse::AddContent_(Buffer& buff) {
     RedisCache* rc = nullptr;
     RedisConnRAII(&rc, RedisPool::instance());
-    // 若命中Redis缓存，从中直接取出返回
-    if (redisFile_ != "nil") {
-        mmFileStat_.st_size = redisFile_.length();
-        mmFile_ = const_cast<char*>(redisFile_.data());
-        buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
-        LOG_INFO("Return redis cache: %s", path_.data());
+    // 命中Redis缓存的文件，从中直接取出返回
+    if (redisFile_ != noStr) {
+        MakeRedisResponse_(buff);
         return;
     }
-    // 若没有命中Redis缓存
+    // 若没有命中Redis缓存的文件
     if (!ifTransNotFile_) {
         int srcFd = open((srcDir_ + path_).data(), O_RDONLY);
         if(srcFd < 0) { 
@@ -166,12 +188,48 @@ void HttpResponse::AddContent_(Buffer& buff) {
         mmFile_ = (char*)mmRet;
         close(srcFd);
         buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
-        if (!rc->setKeyVal(path_, mmFile_, mmFileStat_.st_size)) {
-            LOG_DEBUG("Set key error!");
+        if (NO_REDIS_CACHE.find(GetFileType_()) == NO_REDIS_CACHE.end()) {
+            if (!rc->setKeyVal(path_, mmFile_, mmFileStat_.st_size)) {
+                LOG_DEBUG("Set key %s error!", path_.data());
+            }
         }
         return;
     }    
-    // ToDo: 传输非文件 
+    // 传输非文件无论是否在Redis缓存统一在下面函数中处理
+    AddContentNotFile_(buff, rc);
+}
+
+inline void HttpResponse::AddContentNotFile_(Buffer& buff, RedisCache* rc) {
+    if (STRING_GET.find(getStr_) == STRING_GET.end()) {
+        return;
+    }
+    switch (STRING_GET.at(getStr_)) {
+    case 0: {
+        // get-num-visits
+        redisFile_ = rc->getKeyVal(kNumVisits);
+        MakeRedisResponse_(buff);
+        break;
+    }
+    case 1: {
+        // get-comments
+        vector<string> comments = rc->listRange(kComment, 0, 1000);
+        redisFile_ = "";
+        for (auto &s : comments) {
+            redisFile_ += ("<li>" + s + "</li>");
+        }
+        MakeRedisResponse_(buff);
+        break;
+    }
+    case 2: {
+        // set-comments 
+        rc->listPush(kComment, getSrc_);
+        redisFile_ = "set success";
+        MakeRedisResponse_(buff);
+        break;
+    }
+    default:
+        return;
+    }
 }
 
 void HttpResponse::UnmapFile() {
@@ -215,4 +273,12 @@ void HttpResponse::ErrorContent(Buffer& buff, string message)
 
 bool HttpResponse::ifTransNotFile() {
     return ifTransNotFile_;
+}
+
+vector<string> HttpResponse::ProcessPath_() const {
+    int pos = path_.find('/', 1);
+    if (pos == -1) return {path_, ""};
+    string getStr(path_.begin(), path_.begin() + pos);
+    string src(path_.begin() + pos + 1, path_.end());
+    return {getStr, src};
 }

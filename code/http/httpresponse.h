@@ -17,6 +17,8 @@
 #include "httprequest.h"
 #include "../redis/redisconnRAII.h"
 
+const std::string kComment = "comments";
+const std::string kNumVisits = "numVisits";
 class HttpResponse {
 public:
     HttpResponse();
@@ -35,9 +37,14 @@ private:
     void AddStateLine_(Buffer &buff);
     void AddHeader_(Buffer &buff);
     void AddContent_(Buffer &buff);
+    inline void AddContentNotFile_(Buffer &buffer, RedisCache* rc);
 
     void ErrorHtml_();
     std::string GetFileType_();
+    std::vector<std::string> ProcessPath_() const;
+
+    void CheckRedis_();
+    void MakeRedisResponse_(Buffer& buff);
 
     int code_;
     bool isKeepAlive_;
@@ -51,15 +58,16 @@ private:
     std::shared_ptr<cookie> mCookie_;
     bool ifTransNotFile_;
 
-    bool hitRedisTag_;
     std::string redisFile_;
-    size_t redisFileLen_;
+    std::string getStr_;
+    std::string getSrc_;
 
 public:
     static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;
+    static const std::unordered_set<std::string> NO_REDIS_CACHE;
     static const std::unordered_map<int, std::string> CODE_STATUS;
     static const std::unordered_map<int, std::string> CODE_PATH;
-    static const std::unordered_set<std::string> STRING_GET;
+    static const std::unordered_map<std::string, int> STRING_GET;
 };
 
 

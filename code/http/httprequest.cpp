@@ -12,7 +12,8 @@ Cookie *m_cookie = Cookie::get_instance();        // 获取Cookie单例
 const unordered_set<string> HttpRequest::DEFAULT_HTML{
             "/index", "/register", "/login",
              "/welcome", "/video", "/picture",
-             "/blogindex", "/fileupload", "/filedownload"};
+             "/blogindex", "/fileupload", "/filedownload",
+             "/msgboard"};
 
 const unordered_map<string, int> HttpRequest::DEFAULT_HTML_TAG {
             {"/register.html", 0}, {"/login.html", 1},  };
