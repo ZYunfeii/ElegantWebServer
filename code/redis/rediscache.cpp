@@ -45,14 +45,14 @@ bool RedisCache::setKeyVal(std::string key, char* val, int sz) const {
 
 std::string RedisCache::getKeyVal(std::string key) const {
     std::lock_guard<std::mutex> lk(mtx_);
-    redisReply* r = (redisReply*)redisCommand(ctx_, "get %s", key.c_str());
+    redisReply* r = (redisReply*)redisCommand(ctx_, "get %s", &key[0]); // .c_str() bug?
     if (r->type == REDIS_REPLY_NIL) {
-        LOG_INFO("Key %s is nil.", key.c_str());
+        LOG_INFO("Key %s is nil.", key.data());
         freeReplyObject(r);
         return noStr;
     }
     if (r->type != REDIS_REPLY_STRING) {
-        LOG_ERROR("Failed to get key %s.", key.c_str());
+        LOG_ERROR("Failed to get key %s.", key.data());
         freeReplyObject(r); 
         return ""; 
     }
@@ -63,7 +63,7 @@ std::string RedisCache::getKeyVal(std::string key) const {
 
 bool RedisCache::existKey(std::string key) const {
     std::lock_guard<std::mutex> lk(mtx_);
-    redisReply* r = (redisReply*)redisCommand(ctx_, "exists %s", key.c_str());
+    redisReply* r = (redisReply*)redisCommand(ctx_, "exists %s", key.data());
     if (r->type != REDIS_REPLY_INTEGER) {
         LOG_ERROR("Failed to execute exists %s.", key.c_str());
         freeReplyObject(r); 
@@ -71,14 +71,14 @@ bool RedisCache::existKey(std::string key) const {
     }
     int res = r->integer;
     freeReplyObject(r);
-    return res == 1;
+    return res == 1; 
 }
 
 bool RedisCache::incr(std::string key) const {
     std::lock_guard<std::mutex> lk(mtx_);
     std::string command = "incr ";
     command += key;
-    redisReply* r = (redisReply*)redisCommand(ctx_, command.c_str()); 
+    redisReply* r = (redisReply*)redisCommand(ctx_, command.data()); 
     if (r->type != REDIS_REPLY_INTEGER) {
         LOG_ERROR("Failed to execute command %s.", command.c_str());
         freeReplyObject(r); 
@@ -91,7 +91,7 @@ bool RedisCache::incr(std::string key) const {
 bool RedisCache::flushDB() const {
     std::lock_guard<std::mutex> lk(mtx_);
     std::string command = "flushdb";
-    redisReply* r = (redisReply*)redisCommand(ctx_, command.c_str()); 
+    redisReply* r = (redisReply*)redisCommand(ctx_, command.data()); 
     if (r->type != REDIS_REPLY_STATUS) {
         LOG_ERROR("Failed to execute command %s.", command.c_str());
         freeReplyObject(r); 

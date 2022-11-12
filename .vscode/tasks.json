@@ -6,7 +6,7 @@
         {
             "label": "build_server",
             "type": "shell",
-            "command": "make"
+            "command": "cd build && make"
         },
         {
             "label": "build_redis_test",

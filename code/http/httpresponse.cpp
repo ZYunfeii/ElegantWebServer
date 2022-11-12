@@ -89,6 +89,7 @@ void HttpResponse::Init(const string& srcDir, string& path, std::shared_ptr<cook
 void HttpResponse::CheckRedis_() {
     RedisCache* rc = nullptr;
     RedisConnRAII(&rc, RedisPool::instance());
+    assert(rc);
     if (STRING_GET.count(getStr_) != 0) {
         redisFile_ = noStr;
         ifTransNotFile_ = true;

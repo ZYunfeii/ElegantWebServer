@@ -39,7 +39,6 @@ RedisCache* RedisPool::getRedisCache() {
         rc = connQueue_.front();
         connQueue_.pop();
     }
-    LOG_INFO("get connection, queue size: %d", connQueue_.size());
     return rc;
 }
 
@@ -48,5 +47,4 @@ void RedisPool::freeRedisCache(RedisCache* rc) {
     std::lock_guard<std::mutex> lk(mtx_);
     connQueue_.push(rc);
     sem_post(&semId_); // V
-    LOG_INFO("free connection, queue size: %d", connQueue_.size());
 }
