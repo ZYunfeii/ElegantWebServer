@@ -233,60 +233,36 @@ void HttpRequest::ParseFromUrlencoded_() {
 bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin) {
     if(name == "" || pwd == "") { return false; }
     LOG_INFO("Verify name:%s pwd:%s", name.c_str(), pwd.c_str());
-    MYSQL* sql;
-    SqlConnRAII(&sql,  SqlConnPool::Instance());
-    assert(sql);
-    
+    RedisCache* rc = nullptr;
+    RedisConnRAII(&rc, RedisPool::instance());
+    assert(rc);
     bool flag = false;
-    unsigned int j = 0;
-    char order[256] = { 0 };
-    MYSQL_FIELD *fields = nullptr;
-    MYSQL_RES *res = nullptr;
-    
     if(!isLogin) { flag = true; }
-    /* 查询用户及密码 */
-    snprintf(order, 256, "SELECT username, password FROM user2 WHERE username='%s' LIMIT 1", name.c_str());
-    LOG_DEBUG("%s", order);
-
-    if(mysql_query(sql, order)) { 
-        mysql_free_result(res);
-        return false; 
-    }
-    res = mysql_store_result(sql);
-    j = mysql_num_fields(res);
-    fields = mysql_fetch_fields(res);
-
-    while(MYSQL_ROW row = mysql_fetch_row(res)) {
-        LOG_DEBUG("MYSQL ROW: %s %s", row[0], row[1]);
-        string password(row[1]);
-        /* 注册行为 且 用户名未被使用*/
-        if(isLogin) {
-            if(pwd == password) { 
+    if (rc->existKey(name)) {
+        string password = rc->getKeyVal(name);
+        LOG_DEBUG("Redis get user pwd: %s", password.data());
+        if(isLogin) { // 登录
+            if(pwd == password) {  // 登录，密码正确
                 flag = true;
                 m_cookie_->isCookie_ = true; 
                 m_cookie_->sendCookieStr_ = MD5::md5_encryption(name);
                 m_cookie->add_user_str(name);
             }
-            else {
+            else { // 登录，但密码错误
                 flag = false;
                 LOG_DEBUG("pwd error!");
             }
-        } 
+        }  // 注册，如果Redis中有对应密码，则错误
         else { 
             flag = false; 
             LOG_DEBUG("user used!");
         }
     }
-    mysql_free_result(res);
-
     /* 注册行为 且 用户名未被使用*/
     if(!isLogin && flag == true) {
-        LOG_DEBUG("regirster!");
-        bzero(order, 256);
-        snprintf(order, 256,"INSERT INTO user2(username, password) VALUES('%s','%s')", name.c_str(), pwd.c_str());
-        LOG_DEBUG( "%s", order);
-        if(mysql_query(sql, order)) { 
-            LOG_DEBUG( "Insert error!");
+        LOG_DEBUG("Regirster!"); 
+        if(rc->setKeyVal(name, pwd)) { 
+            LOG_DEBUG( "Insert redis error!");
             flag = false; 
         }
         flag = true;
@@ -294,7 +270,6 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
         m_cookie_->sendCookieStr_ = MD5::md5_encryption(name);;
         m_cookie->add_user_str(name);
     }
-    SqlConnPool::Instance()->FreeConn(sql);
     LOG_DEBUG( "UserVerify success!!");
     return flag;
 }

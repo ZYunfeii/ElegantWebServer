@@ -1,4 +1,4 @@
-FROM ubuntu/mysql
+FROM ubuntu:18.04
 
 ADD ./code/ /server/code
 ADD ./CMakeLists.txt /server
@@ -12,7 +12,8 @@ RUN chmod 777 dockerrun.sh
 RUN apt-get update
 RUN apt-get install -y cmake
 RUN apt-get install -y build-essential
-RUN apt-get install -y libmysqlclient-dev
+RUN apt-get install -y openssl
+RUN apt-get install -y libssl-dev
 RUN apt-get clean
 
 WORKDIR /server/redis-7.0.4/src

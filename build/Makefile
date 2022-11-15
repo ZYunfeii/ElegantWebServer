@@ -142,185 +142,302 @@ server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/build
 .PHONY : server/fast
 
-# target to build an object file
-code/buffer/buffer.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/buffer/buffer.o
+code/buffer/buffer.o: code/buffer/buffer.cpp.o
+
 .PHONY : code/buffer/buffer.o
 
-# target to preprocess a source file
-code/buffer/buffer.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/buffer/buffer.i
+# target to build an object file
+code/buffer/buffer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/buffer/buffer.cpp.o
+.PHONY : code/buffer/buffer.cpp.o
+
+code/buffer/buffer.i: code/buffer/buffer.cpp.i
+
 .PHONY : code/buffer/buffer.i
 
-# target to generate assembly for a file
-code/buffer/buffer.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/buffer/buffer.s
+# target to preprocess a source file
+code/buffer/buffer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/buffer/buffer.cpp.i
+.PHONY : code/buffer/buffer.cpp.i
+
+code/buffer/buffer.s: code/buffer/buffer.cpp.s
+
 .PHONY : code/buffer/buffer.s
 
-# target to build an object file
-code/http/httpconn.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpconn.o
+# target to generate assembly for a file
+code/buffer/buffer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/buffer/buffer.cpp.s
+.PHONY : code/buffer/buffer.cpp.s
+
+code/http/httpconn.o: code/http/httpconn.cpp.o
+
 .PHONY : code/http/httpconn.o
 
-# target to preprocess a source file
-code/http/httpconn.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpconn.i
+# target to build an object file
+code/http/httpconn.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpconn.cpp.o
+.PHONY : code/http/httpconn.cpp.o
+
+code/http/httpconn.i: code/http/httpconn.cpp.i
+
 .PHONY : code/http/httpconn.i
 
-# target to generate assembly for a file
-code/http/httpconn.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpconn.s
+# target to preprocess a source file
+code/http/httpconn.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpconn.cpp.i
+.PHONY : code/http/httpconn.cpp.i
+
+code/http/httpconn.s: code/http/httpconn.cpp.s
+
 .PHONY : code/http/httpconn.s
 
-# target to build an object file
-code/http/httprequest.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httprequest.o
+# target to generate assembly for a file
+code/http/httpconn.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpconn.cpp.s
+.PHONY : code/http/httpconn.cpp.s
+
+code/http/httprequest.o: code/http/httprequest.cpp.o
+
 .PHONY : code/http/httprequest.o
 
-# target to preprocess a source file
-code/http/httprequest.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httprequest.i
+# target to build an object file
+code/http/httprequest.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httprequest.cpp.o
+.PHONY : code/http/httprequest.cpp.o
+
+code/http/httprequest.i: code/http/httprequest.cpp.i
+
 .PHONY : code/http/httprequest.i
 
-# target to generate assembly for a file
-code/http/httprequest.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httprequest.s
+# target to preprocess a source file
+code/http/httprequest.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httprequest.cpp.i
+.PHONY : code/http/httprequest.cpp.i
+
+code/http/httprequest.s: code/http/httprequest.cpp.s
+
 .PHONY : code/http/httprequest.s
 
-# target to build an object file
-code/http/httpresponse.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpresponse.o
+# target to generate assembly for a file
+code/http/httprequest.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httprequest.cpp.s
+.PHONY : code/http/httprequest.cpp.s
+
+code/http/httpresponse.o: code/http/httpresponse.cpp.o
+
 .PHONY : code/http/httpresponse.o
 
-# target to preprocess a source file
-code/http/httpresponse.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpresponse.i
+# target to build an object file
+code/http/httpresponse.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpresponse.cpp.o
+.PHONY : code/http/httpresponse.cpp.o
+
+code/http/httpresponse.i: code/http/httpresponse.cpp.i
+
 .PHONY : code/http/httpresponse.i
 
-# target to generate assembly for a file
-code/http/httpresponse.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpresponse.s
+# target to preprocess a source file
+code/http/httpresponse.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpresponse.cpp.i
+.PHONY : code/http/httpresponse.cpp.i
+
+code/http/httpresponse.s: code/http/httpresponse.cpp.s
+
 .PHONY : code/http/httpresponse.s
 
-# target to build an object file
-code/log/log.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/log/log.o
+# target to generate assembly for a file
+code/http/httpresponse.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/http/httpresponse.cpp.s
+.PHONY : code/http/httpresponse.cpp.s
+
+code/log/log.o: code/log/log.cpp.o
+
 .PHONY : code/log/log.o
 
-# target to preprocess a source file
-code/log/log.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/log/log.i
+# target to build an object file
+code/log/log.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/log/log.cpp.o
+.PHONY : code/log/log.cpp.o
+
+code/log/log.i: code/log/log.cpp.i
+
 .PHONY : code/log/log.i
 
-# target to generate assembly for a file
-code/log/log.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/log/log.s
+# target to preprocess a source file
+code/log/log.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/log/log.cpp.i
+.PHONY : code/log/log.cpp.i
+
+code/log/log.s: code/log/log.cpp.s
+
 .PHONY : code/log/log.s
 
-# target to build an object file
-code/main.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/main.o
+# target to generate assembly for a file
+code/log/log.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/log/log.cpp.s
+.PHONY : code/log/log.cpp.s
+
+code/main.o: code/main.cpp.o
+
 .PHONY : code/main.o
 
-# target to preprocess a source file
-code/main.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/main.i
+# target to build an object file
+code/main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/main.cpp.o
+.PHONY : code/main.cpp.o
+
+code/main.i: code/main.cpp.i
+
 .PHONY : code/main.i
 
-# target to generate assembly for a file
-code/main.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/main.s
+# target to preprocess a source file
+code/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/main.cpp.i
+.PHONY : code/main.cpp.i
+
+code/main.s: code/main.cpp.s
+
 .PHONY : code/main.s
 
-# target to build an object file
-code/pool/sqlconnpool.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/pool/sqlconnpool.o
-.PHONY : code/pool/sqlconnpool.o
-
-# target to preprocess a source file
-code/pool/sqlconnpool.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/pool/sqlconnpool.i
-.PHONY : code/pool/sqlconnpool.i
-
 # target to generate assembly for a file
-code/pool/sqlconnpool.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/pool/sqlconnpool.s
-.PHONY : code/pool/sqlconnpool.s
+code/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/main.cpp.s
+.PHONY : code/main.cpp.s
 
-# target to build an object file
-code/redis/rediscache.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/rediscache.o
+code/redis/rediscache.o: code/redis/rediscache.cpp.o
+
 .PHONY : code/redis/rediscache.o
 
-# target to preprocess a source file
-code/redis/rediscache.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/rediscache.i
+# target to build an object file
+code/redis/rediscache.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/rediscache.cpp.o
+.PHONY : code/redis/rediscache.cpp.o
+
+code/redis/rediscache.i: code/redis/rediscache.cpp.i
+
 .PHONY : code/redis/rediscache.i
 
-# target to generate assembly for a file
-code/redis/rediscache.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/rediscache.s
+# target to preprocess a source file
+code/redis/rediscache.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/rediscache.cpp.i
+.PHONY : code/redis/rediscache.cpp.i
+
+code/redis/rediscache.s: code/redis/rediscache.cpp.s
+
 .PHONY : code/redis/rediscache.s
 
-# target to build an object file
-code/redis/redispool.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/redispool.o
+# target to generate assembly for a file
+code/redis/rediscache.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/rediscache.cpp.s
+.PHONY : code/redis/rediscache.cpp.s
+
+code/redis/redispool.o: code/redis/redispool.cpp.o
+
 .PHONY : code/redis/redispool.o
 
-# target to preprocess a source file
-code/redis/redispool.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/redispool.i
+# target to build an object file
+code/redis/redispool.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/redispool.cpp.o
+.PHONY : code/redis/redispool.cpp.o
+
+code/redis/redispool.i: code/redis/redispool.cpp.i
+
 .PHONY : code/redis/redispool.i
 
-# target to generate assembly for a file
-code/redis/redispool.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/redispool.s
+# target to preprocess a source file
+code/redis/redispool.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/redispool.cpp.i
+.PHONY : code/redis/redispool.cpp.i
+
+code/redis/redispool.s: code/redis/redispool.cpp.s
+
 .PHONY : code/redis/redispool.s
 
-# target to build an object file
-code/server/epoller.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/epoller.o
+# target to generate assembly for a file
+code/redis/redispool.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/redis/redispool.cpp.s
+.PHONY : code/redis/redispool.cpp.s
+
+code/server/epoller.o: code/server/epoller.cpp.o
+
 .PHONY : code/server/epoller.o
 
-# target to preprocess a source file
-code/server/epoller.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/epoller.i
+# target to build an object file
+code/server/epoller.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/epoller.cpp.o
+.PHONY : code/server/epoller.cpp.o
+
+code/server/epoller.i: code/server/epoller.cpp.i
+
 .PHONY : code/server/epoller.i
 
-# target to generate assembly for a file
-code/server/epoller.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/epoller.s
+# target to preprocess a source file
+code/server/epoller.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/epoller.cpp.i
+.PHONY : code/server/epoller.cpp.i
+
+code/server/epoller.s: code/server/epoller.cpp.s
+
 .PHONY : code/server/epoller.s
 
-# target to build an object file
-code/server/webserver.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/webserver.o
+# target to generate assembly for a file
+code/server/epoller.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/epoller.cpp.s
+.PHONY : code/server/epoller.cpp.s
+
+code/server/webserver.o: code/server/webserver.cpp.o
+
 .PHONY : code/server/webserver.o
 
-# target to preprocess a source file
-code/server/webserver.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/webserver.i
+# target to build an object file
+code/server/webserver.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/webserver.cpp.o
+.PHONY : code/server/webserver.cpp.o
+
+code/server/webserver.i: code/server/webserver.cpp.i
+
 .PHONY : code/server/webserver.i
 
-# target to generate assembly for a file
-code/server/webserver.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/webserver.s
+# target to preprocess a source file
+code/server/webserver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/webserver.cpp.i
+.PHONY : code/server/webserver.cpp.i
+
+code/server/webserver.s: code/server/webserver.cpp.s
+
 .PHONY : code/server/webserver.s
 
-# target to build an object file
-code/timer/heaptimer.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/timer/heaptimer.o
+# target to generate assembly for a file
+code/server/webserver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server/webserver.cpp.s
+.PHONY : code/server/webserver.cpp.s
+
+code/timer/heaptimer.o: code/timer/heaptimer.cpp.o
+
 .PHONY : code/timer/heaptimer.o
 
-# target to preprocess a source file
-code/timer/heaptimer.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/timer/heaptimer.i
+# target to build an object file
+code/timer/heaptimer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/timer/heaptimer.cpp.o
+.PHONY : code/timer/heaptimer.cpp.o
+
+code/timer/heaptimer.i: code/timer/heaptimer.cpp.i
+
 .PHONY : code/timer/heaptimer.i
 
-# target to generate assembly for a file
-code/timer/heaptimer.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/timer/heaptimer.s
+# target to preprocess a source file
+code/timer/heaptimer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/timer/heaptimer.cpp.i
+.PHONY : code/timer/heaptimer.cpp.i
+
+code/timer/heaptimer.s: code/timer/heaptimer.cpp.s
+
 .PHONY : code/timer/heaptimer.s
+
+# target to generate assembly for a file
+code/timer/heaptimer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/timer/heaptimer.cpp.s
+.PHONY : code/timer/heaptimer.cpp.s
 
 # Help Target
 help:
@@ -349,9 +466,6 @@ help:
 	@echo "... code/main.o"
 	@echo "... code/main.i"
 	@echo "... code/main.s"
-	@echo "... code/pool/sqlconnpool.o"
-	@echo "... code/pool/sqlconnpool.i"
-	@echo "... code/pool/sqlconnpool.s"
 	@echo "... code/redis/rediscache.o"
 	@echo "... code/redis/rediscache.i"
 	@echo "... code/redis/rediscache.s"

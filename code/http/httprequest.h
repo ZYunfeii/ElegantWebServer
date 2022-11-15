@@ -11,14 +11,12 @@
 #include <string>
 #include <regex>
 #include <errno.h>     
-#include <mysql/mysql.h>  //mysql
 
 #include <fstream>
 
 #include "../buffer/buffer.h"
 #include "../log/log.h"
-#include "../pool/sqlconnpool.h"
-#include "../pool/sqlconnRAII.h"
+#include "../redis/redisconnRAII.h"
 
 struct cookie{
     bool isCookie_;

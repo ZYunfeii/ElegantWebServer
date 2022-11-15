@@ -16,6 +16,7 @@
   - [x] 增加服务器对信号的处理，改写SIGHUP信号处理，使服务器可以以守护进程运行。
   - [x] 增加Redis缓存和连接池，进一步封装hiredis库。
   - [x] 重写了更加简洁高效的线程池（threadpoolv2.h）
+  - [x] 增加docker打包功能，在docker-version分支中使用Dockerfile一键部署web服务
 
 # 注意
 - 在根目录运行 `/bin/server` 启动服务器
@@ -23,5 +24,10 @@
 - MySQL如果不想记录注册、登陆界面信息，可以不开。
 - redis默认AOF持久化
 - redis缓存让qps骤降，因为原项目的资源文件部署在服务端本地，开本地文件会比redis查key快。若资源不在本地的情况，redis缓存才有加速作用。
+## Docker
+- `docker-version`分支中数据库方面只采用redis，不再使用mysql
+- 根目录运行 `docker build -t webserver:v1 .` 根据Dockerfile创建镜像
+- 根目录运行 `docker run -it -p 9006:9006 --name server webserver:v1` 将本机9006端口映射到容器9006端口（web服务的端口）并启动容器
+- 目前server不稳定，若出现无法访问服务器现象，删除容器重启即可
 
 ​		

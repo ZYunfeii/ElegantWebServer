@@ -1,13 +1,10 @@
 #!/bin/bash
 
-{
-    echo "server start."
-    ./build/server
-} & 
-{
-    echo "redis start."
-    redis-server ./code/redis/redis.conf
-}&
+
+redis-server ./code/redis/redis.conf
+echo "redis start."
+echo "server start."
+./build/server
 
 while [[ true ]]; do
     sleep 1

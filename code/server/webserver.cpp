@@ -15,9 +15,7 @@ timeoutMS：每一个新加入的client都有timeoutMS ms expires（生存期）
 */
 WebServer::WebServer(
             int port, int trigMode, int timeoutMS, bool OptLinger,
-            int sqlPort, const char* sqlUser, const  char* sqlPwd,
-            const char* dbName, int connPoolNum, int threadNum,
-            bool openLog, int logLevel, int logQueSize,
+            int threadNum, bool openLog, int logLevel, int logQueSize,
             char* redisIP, int redisPort, int redisConnNum):
             port_(port), openLinger_(OptLinger), timeoutMS_(timeoutMS), isClose_(false),
             timer_(new HeapTimer()), threadpool_(new ThreadPoolV2(threadNum)), epoller_(new Epoller())
@@ -27,7 +25,6 @@ WebServer::WebServer(
     strncat(srcDir_, "/resources/", 32);
     HttpConn::userCount = 0;
     HttpConn::srcDir = srcDir_;
-    SqlConnPool::Instance()->Init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);
     
     InitEventMode_(trigMode);
     if(!InitSocket_()) { isClose_ = true;}
@@ -43,7 +40,6 @@ WebServer::WebServer(
                             (connEvent_ & EPOLLET ? "ET": "LT"));
             LOG_INFO("LogSys level: %d", logLevel);
             LOG_INFO("srcDir: %s", HttpConn::srcDir);
-            LOG_INFO("SqlConnPool num: %d, ThreadPool num: %d", connPoolNum, threadNum);
         }
     }
     RedisPool::instance()->init(redisConnNum, redisIP, redisPort);
@@ -53,7 +49,6 @@ WebServer::~WebServer() {
     close(listenFd_);
     isClose_ = true;
     free(srcDir_);
-    SqlConnPool::Instance()->ClosePool();
 }
 
 void WebServer::InitEventMode_(int trigMode) {

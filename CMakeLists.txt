@@ -11,4 +11,4 @@ message(STATUS ${SRC_LIST})
 
 add_executable(server ${SRC_LIST})
 
-target_link_libraries(server pthread mysqlclient crypto hiredis)
+target_link_libraries(server pthread crypto hiredis)
