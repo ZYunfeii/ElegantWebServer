@@ -5,9 +5,6 @@ ADD ./CMakeLists.txt /server
 ADD ./resources /server/resources
 ADD redis-7.0.4.tar.gz /server
 ADD hiredis-1.0.2.tar.gz /server
-ADD dockerrun.sh /server
-WORKDIR /server
-RUN chmod 777 dockerrun.sh
 
 RUN apt-get update
 RUN apt-get install -y cmake
@@ -35,4 +32,3 @@ RUN make
 
 
 WORKDIR /server
-ENTRYPOINT  ["./dockerrun.sh"]
