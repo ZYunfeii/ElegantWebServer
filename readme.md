@@ -30,6 +30,6 @@
 - 根目录运行 `docker run -it -p 9006:9006 --name server webserver:v1 \bin\bash` 将本机9006端口映射到容器9006端口（web服务的端口）并启动容器
 - 容器server目录运行 `redis-server ./code/redis/redis.conf` 启动redis
 - 容器server目录运行 `/build/server` 启动web server
-- 目前server不稳定，若出现无法访问服务器现象，删除容器重启即可
+- 目前server不稳定，若出现无法访问服务器现象，重启server即可
 
 ​		
