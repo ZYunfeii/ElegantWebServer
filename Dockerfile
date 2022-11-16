@@ -5,12 +5,12 @@ ENV PROJECT_DIR=/server
 COPY ./code/ $PROJECT_DIR/code
 COPY ./CMakeLists.txt $PROJECT_DIR
 COPY ./resources $PROJECT_DIR/resources
-COPY redis-7.0.4.tar.gz $PROJECT_DIR
-COPY hiredis-1.0.2.tar.gz $PROJECT_DIR
+## ADD can unzip package automatically
+ADD redis-7.0.4.tar.gz $PROJECT_DIR 
+ADD hiredis-1.0.2.tar.gz $PROJECT_DIR
 # install some package necessary
 RUN apt-get update && apt-get install -y cmake && apt-get install -y build-essential \
-    && apt-get install -y openssl && apt-get install -y libssl-dev && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    && apt-get install -y openssl && apt-get install -y libssl-dev && apt-get clean
 # install redis and hiredis
 WORKDIR $PROJECT_DIR/redis-7.0.4/src
 RUN make && make install
