@@ -1,4 +1,5 @@
 .git/
+.gitignore
 build/
 .vscode/
 log/
@@ -7,3 +8,5 @@ redisfiles/
 test/
 user-msgs/
 webbench-1.5/
+readme.md
+LICENSE
