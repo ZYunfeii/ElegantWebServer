@@ -20,7 +20,7 @@ RUN ldconfig
 
 WORKDIR $PROJECT_DIR
 # clean the unnecessary package
-RUN rm redis-7.0.4.tar.gz && rm hiredis-1.0.2.tar.gz
+RUN rm redis-7.0.4 && rm hiredis-1.0.2
 # create some folders to store the log and something others
 RUN mkdir build && mkdir bin && mkdir log && mkdir redisfiles && mkdir user-msgs
 # compile the web server
