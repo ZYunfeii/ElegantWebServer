@@ -16,6 +16,10 @@ bool RedisCache::init(const char* host, int port) {
         return false;
     }
     LOG_INFO("Connect to redisServer Success");
+    auto reply = (redisReply *)redisCommand(ctx_, "AUTH %s", "yunfei"); 
+    if (reply->type == REDIS_REPLY_ERROR) {
+    	LOG_ERROR("Redis auth error!");
+    }
     return true;
 }
 

@@ -95,6 +95,8 @@ void HttpResponse::CheckRedis_() {
         ifTransNotFile_ = true;
         return;
     }
+    redisFile_=noStr;
+    return;
     redisFile_ = rc->getKeyVal(path_);
 }
 
@@ -189,11 +191,11 @@ void HttpResponse::AddContent_(Buffer& buff) {
         mmFile_ = (char*)mmRet;
         close(srcFd);
         buff.Append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
-        if (NO_REDIS_CACHE.find(GetFileType_()) == NO_REDIS_CACHE.end()) {
+        /*if (NO_REDIS_CACHE.find(GetFileType_()) == NO_REDIS_CACHE.end()) {
             if (!rc->setKeyVal(path_, mmFile_, mmFileStat_.st_size)) {
                 LOG_DEBUG("Set key %s error!", path_.data());
             }
-        }
+        }*/
         return;
     }    
     // 传输非文件无论是否在Redis缓存统一在下面函数中处理
